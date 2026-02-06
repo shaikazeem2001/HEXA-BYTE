@@ -9,6 +9,11 @@ const connectDB = require("./config/db");
 // Load ENV
 dotenv.config();
 
+// Check for Critical ENV Vars
+if (!process.env.MONGO_URI) {
+  console.error("CRITICAL ERROR: MONGO_URI is missing from environment variables.");
+}
+
 // Connect MongoDB
 connectDB();
 
