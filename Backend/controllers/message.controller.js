@@ -1,25 +1,36 @@
-const Message = require("../models/Message");
-const Room = require("../models/Room");
-const mongoose = require("mongoose");
+const supabase = require("../config/supabase");
 
 // Get messages for a specific room
 exports.getMessagesByRoom = async (req, res) => {
   try {
-    let { room } = req.params;
-    
-    // If it's not a valid ObjectId, assume it's a name and find the ID
-    if (!mongoose.Types.ObjectId.isValid(room)) {
-      const roomObj = await Room.findOne({ name: room });
-      if (!roomObj) return res.json([]); // No messages if room doesn't exist
-      room = roomObj._id;
-    }
+    const { room } = req.params;
 
-    const messages = await Message.find({ room })
-      .populate("sender", "username avatar")
-      .sort({ createdAt: 1 })
-      .limit(100);
-    res.json(messages);
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .select(`
+        *,
+        sender:users(username)
+      `)
+      .eq("room", room)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    // Format for frontend compatibility
+    const formatted = messages.map(m => ({
+      _id: m.id,
+      text: m.message_text,
+      sender: {
+        id: m.sender_id,
+        username: m.sender.username
+      },
+      room: m.room,
+      createdAt: m.created_at
+    }));
+
+    res.json(formatted);
   } catch (err) {
+    console.error("Get messages error:", err);
     res.status(500).json({ message: "Failed to fetch messages" });
   }
 };

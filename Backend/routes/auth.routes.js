@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const supabase = require("../config/supabase");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-//signup routes
+// signup routes
 router.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -13,7 +14,13 @@ router.post("/signup", async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
     if (existingUser) {
       return res.status(400).json({ message: "User already registered" });
     }
@@ -22,11 +29,13 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
+    const { data: newUser, error: createError } = await supabase
+      .from("users")
+      .insert([{ username, email, password_hash: hashedPassword }])
+      .select()
+      .single();
+
+    if (createError) throw createError;
 
     return res.status(201).json({
       message: "User registered successfully",
@@ -38,7 +47,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-//middleware route 
+// middleware route 
 const authMiddleware = require("../middleware/auth.middleware");
 
 router.get("/profile", authMiddleware, (req, res) => {
@@ -48,27 +57,30 @@ router.get("/profile", authMiddleware, (req, res) => {
   });
 });
 
-
-const jwt = require("jsonwebtoken");
-
-//login routes
+// login routes
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const { data: user, error: fetchError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
     // Create Token
     const token = jwt.sign(
-      { id: user._id },
+      { id: user.id },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -77,12 +89,11 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email
       }
     });
-    //error msg
   } catch (error) {
     console.log("Login error:", error);
     return res.status(500).json({ message: "Server error" });
