@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Plus, Key, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
+import { Lock, Plus, Key, ArrowRight, ShieldCheck, Loader2, Globe, X, Copy, CheckCircle2 } from "lucide-react";
 import axios from "../api/Axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
@@ -11,6 +11,10 @@ const PrivateRooms = () => {
     const [roomName, setRoomName] = useState("");
     const [roomCode, setRoomCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newCommunity, setNewCommunity] = useState({ name: "", description: "", isPrivate: false });
+    const [createdRoom, setCreatedRoom] = useState(null);
+    const isGuest = localStorage.getItem("isGuest") === "true";
 
     useEffect(() => {
         const savedRooms = JSON.parse(localStorage.getItem("joinedCommunities") || "[]");
@@ -40,6 +44,37 @@ const PrivateRooms = () => {
             navigate(`/communities/${res.data.room.id || res.data.room.name}`);
         } catch (err) {
             alert(err.response?.data?.message || "Failed to join room");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCreateCommunity = async () => {
+        if (isGuest) return alert("Guests cannot create communities. Please sign in!");
+        if (!newCommunity.name.trim()) return alert("Please enter a community name");
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.post(`${API_URL}/api/rooms`, newCommunity, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Update local joined communities
+            const joined = JSON.parse(localStorage.getItem("joinedCommunities") || "[]");
+            const updated = [res.data, ...joined];
+            localStorage.setItem("joinedCommunities", JSON.stringify(updated));
+
+            // If it was private, update our local room list too
+            if (newCommunity.isPrivate) {
+                setRooms(prev => [res.data, ...prev]);
+                setCreatedRoom(res.data);
+            } else {
+                setIsModalOpen(false);
+                setNewCommunity({ name: "", description: "", isPrivate: false });
+                alert("Public community created! You can find it in the Join Communities section.");
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to create community");
         } finally {
             setIsLoading(false);
         }
@@ -97,10 +132,30 @@ const PrivateRooms = () => {
                             </div>
                         )}
                     </div>
+
+                    <div className="mt-8 bg-gradient-to-br from-iris-600 to-iris-800 rounded-3xl p-8 text-white shadow-xl shadow-iris-600/20">
+                        <h3 className="font-black text-2xl mb-2 tracking-tight">Create your own!</h3>
+                        <p className="text-iris-100 mb-6 text-sm leading-relaxed">Want to start a new community? Lead the way and build something great.</p>
+                        <button
+                            onClick={() => {
+                                if (isGuest) {
+                                    alert("Please login to create a community!");
+                                    navigate("/");
+                                } else {
+                                    setIsModalOpen(true);
+                                }
+                            }}
+                            className="w-full bg-white text-iris-600 font-black py-4 rounded-2xl hover:bg-iris-50 shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <Plus size={20} />
+                            START A COMMUNITY
+                        </button>
+                    </div>
                 </section>
 
                 {/* Join by code section */}
-                <section className="bg-gray-900 border border-gray-800 rounded-3xl p-8 md:p-10 flex flex-col justify-center">
+                <section className="bg-gray-900 border border-gray-800 rounded-3xl p-8 md:p-10 flex flex-col justify-center h-fit sticky top-8">
+
                     <div className="mb-8">
                         <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-2">
                             <Key size={24} className="text-iris-500" />
@@ -138,6 +193,105 @@ const PrivateRooms = () => {
                     </div>
                 </section>
             </div>
+
+            {/* Create Community Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
+                        {createdRoom ? (
+                            <div className="text-center py-4">
+                                <div className="flex justify-center mb-6">
+                                    <div className="bg-green-500/20 p-4 rounded-full text-green-500">
+                                        <CheckCircle2 size={48} />
+                                    </div>
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-2">Community Created!</h2>
+                                <p className="text-gray-400 mb-8">Share this invite code with your friends to join your private room.</p>
+
+                                <div className="bg-black border border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 group cursor-pointer" onClick={() => {
+                                    navigator.clipboard.writeText(createdRoom.inviteCode);
+                                    alert("Invite code copied!");
+                                }}>
+                                    <span className="text-xl font-mono font-bold text-iris-400 tracking-wider uppercase">{createdRoom.inviteCode}</span>
+                                    <Copy size={20} className="text-gray-500 group-hover:text-white" />
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setCreatedRoom(null);
+                                        setNewCommunity({ name: "", description: "", isPrivate: false });
+                                    }}
+                                    className="w-full bg-iris-600 hover:bg-iris-500 text-white font-bold py-4 rounded-2xl transition-all"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-black text-white tracking-tight">New Community</h2>
+                                    <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Community Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. PixelArt Enthusiasts"
+                                            className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium"
+                                            value={newCommunity.name}
+                                            onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Description (Optional)</label>
+                                        <textarea
+                                            placeholder="What is this community about?"
+                                            className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium h-24 resize-none"
+                                            value={newCommunity.description}
+                                            onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Visibility</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <button
+                                                onClick={() => setNewCommunity({ ...newCommunity, isPrivate: false })}
+                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${!newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                                            >
+                                                <Globe size={20} />
+                                                <span className="text-xs font-bold uppercase tracking-tight">Public</span>
+                                            </button>
+                                            <button
+                                                onClick={() => setNewCommunity({ ...newCommunity, isPrivate: true })}
+                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                                            >
+                                                <Lock size={20} />
+                                                <span className="text-xs font-bold uppercase tracking-tight">Private</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={handleCreateCommunity}
+                                        disabled={isLoading}
+                                        className="w-full bg-iris-600 hover:bg-iris-500 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-iris-600/20 active:scale-[0.98] flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
+                                    >
+                                        {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                                        CREATE COMMUNITY
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

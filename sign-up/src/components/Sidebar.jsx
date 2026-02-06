@@ -1,13 +1,12 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Hash, MessageSquare, Megaphone, Settings, Plus, X } from 'lucide-react';
+import { Home, Rocket, Hash, MessageSquare, Megaphone, Settings, Plus, X } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const navItems = [
     { icon: <Home size={24} />, label: 'Home', path: '/profile' },
-    { icon: <Users size={24} />, label: 'Communities', path: '/exploretopics' },
-    { icon: <Hash size={24} />, label: 'Channels', path: '#' },
+    { icon: <Rocket size={24} />, label: 'Popular', path: '/exploretopics' },
     { icon: <MessageSquare size={24} />, label: 'Private Rooms', path: '/privaterooms' },
     { icon: <Megaphone size={24} />, label: 'Advertise', path: '#' },
   ];
