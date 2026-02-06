@@ -3,15 +3,24 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
-const supabase = require("./config/supabase");
+const mongoose = require("mongoose");
+const connectDB = require("./config/db");
 
+// Load ENV
 dotenv.config();
+
+// Connect MongoDB
+connectDB();
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Models
+const Room = require("./models/Room");
+const Message = require("./models/Message");
 
 // Routes
 const authRoutes = require("./routes/auth.routes");
@@ -24,7 +33,7 @@ app.use("/api/rooms", roomRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
-  res.send("server is working");
+  res.send("server is working with MongoDB");
 });
 
 // Create HTTP server
@@ -50,53 +59,35 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data) => {
     try {
       // Find room by name or ID
-      const { data: roomObj, error: roomError } = await supabase
-        .from("rooms")
-        .select("id, name")
-        .or(`id.eq.${data.room},name.eq.${data.room}`)
-        .maybeSingle();
-
-      let targetRoomId = roomObj?.id;
+      let roomObj;
+      if (mongoose.Types.ObjectId.isValid(data.room)) {
+        roomObj = await Room.findById(data.room);
+      } else {
+        roomObj = await Room.findOne({ name: data.room });
+      }
 
       if (!roomObj) {
         // Create room if it doesn't exist
-        const { data: newRoom, error: createRoomError } = await supabase
-          .from("rooms")
-          .insert([{ name: data.room, created_by: data.senderId }])
-          .select()
-          .single();
-        
-        if (createRoomError) throw createRoomError;
-        targetRoomId = newRoom.id;
+        roomObj = new Room({
+          name: data.room,
+          createdBy: data.senderId
+        });
+        await roomObj.save();
       }
 
-      // Save message to Supabase
-      const { data: newMessage, error: msgError } = await supabase
-        .from("messages")
-        .insert([{
-          room: data.room, // Keep string version for sub-channels
-          room_id: targetRoomId,
-          sender_id: data.senderId,
-          message_text: data.text
-        }])
-        .select(`
-          *,
-          sender:users(username)
-        `)
-        .single();
-
-      if (msgError) throw msgError;
+      // Save message to MongoDB
+      const newMessage = new Message({
+        room: roomObj._id,
+        sender: data.senderId,
+        text: data.text
+      });
+      await newMessage.save();
 
       // Emit to everyone in the room
+      const populatedMsg = await Message.findById(newMessage._id).populate("sender", "username avatar");
       io.to(data.room).emit("receive_message", {
-        id: newMessage.id,
-        text: newMessage.message_text,
-        sender: {
-          id: newMessage.sender_id,
-          username: newMessage.sender.username
-        },
-        room: data.room,
-        createdAt: newMessage.created_at
+        ...populatedMsg._doc,
+        room: data.room // Keep the room name for frontend compatibility
       });
     } catch (err) {
       console.error("Error saving message:", err);
@@ -109,7 +100,7 @@ io.on("connection", (socket) => {
 });
 
 // Port
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 9096;
 
 // Start Server
 server.listen(PORT, () => {
