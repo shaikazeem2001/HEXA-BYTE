@@ -1,0 +1,14 @@
+/* App.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Only body & root should control page height */
+html, body, #root {
+  height: 100%;
+  background-color: black;
+  color: white;
+}

@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  
+  --color-iris-50: #efedfb;
+  --color-iris-100: #dad4f5;
+  --color-iris-200: #b9aded;
+  --color-iris-300: #907be2;
+  --color-iris-400: #714dd4;
+  --color-iris-500: #5d3fd3;
+  --color-iris-600: #4b2ebc;
+  --color-iris-700: #3e269c;
+  --color-iris-800: #352182;
+  --color-iris-900: #2e1e6b;
+  --color-iris-950: #1a1140;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+}
