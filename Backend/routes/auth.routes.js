@@ -1,11 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // signup routes
 router.post("/signup", async (req, res) => {
+  // Check for JWT_SECRET
+  if (!process.env.JWT_SECRET) {
+    console.error("CRITICAL ERROR: JWT_SECRET is not defined in environment variables.");
+    return res.status(500).json({ message: "Server configuration error" });
+  }
+
   try {
     const { username, email, password } = req.body;
 
@@ -54,6 +60,12 @@ router.get("/profile", authMiddleware, (req, res) => {
 
 // login routes
 router.post("/login", async (req, res) => {
+  // Check for JWT_SECRET
+  if (!process.env.JWT_SECRET) {
+    console.error("CRITICAL ERROR: JWT_SECRET is not defined in environment variables.");
+    return res.status(500).json({ message: "Server configuration error" });
+  }
+
   try {
     const { email, password } = req.body;
 
