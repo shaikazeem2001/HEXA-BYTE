@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Plus, Key, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
 import axios from "../api/Axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:9096";
+const API_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
 
 const PrivateRooms = () => {
     const navigate = useNavigate();

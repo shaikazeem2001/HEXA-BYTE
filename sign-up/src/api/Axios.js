@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:9090",
+  baseURL: import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app",
 });
 
 instance.interceptors.request.use((config) => {
