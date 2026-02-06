@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e6
 const Profilepage = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem("username");
+  const isGuest = localStorage.getItem("isGuest") === "true";
   const [joinedCommunities, setJoinedCommunities] = useState([]);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ const Profilepage = () => {
   const [createdRoom, setCreatedRoom] = useState(null);
 
   const handleCreateCommunity = async () => {
+    if (isGuest) return alert("Guests cannot create communities. Please sign in!");
     if (!newCommunity.name.trim()) return alert("Please enter a community name");
     setIsLoading(true);
     try {
@@ -62,8 +64,12 @@ const Profilepage = () => {
     <div className="max-w-6xl mx-auto">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">Welcome back, {username}!</h1>
-          <p className="text-gray-400 mt-1 text-sm md:text-base italic">Check out what's happening in your communities.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+            Welcome back, {username}! {isGuest && <span className="text-xs bg-iris-600/30 text-iris-400 px-2 py-0.5 rounded-full ml-2 align-middle font-normal uppercase tracking-wider border border-iris-500/30">Guest Mode</span>}
+          </h1>
+          <p className="text-gray-400 mt-1 text-sm md:text-base italic">
+            {isGuest ? "You are exploring as a guest. Sign in to join communities!" : "Check out what's happening in your communities."}
+          </p>
         </div>
         <button
           onClick={handleLogout}
@@ -152,7 +158,14 @@ const Profilepage = () => {
             <h3 className="font-bold text-lg mb-2">Create your own!</h3>
             <p className="text-sm text-iris-100 mb-4">Want to start a new community? Lead the way and build something great.</p>
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                if (isGuest) {
+                  alert("Please login to create a community!");
+                  navigate("/");
+                } else {
+                  setIsModalOpen(true);
+                }
+              }}
               className="w-full bg-white text-iris-600 font-bold py-2 rounded-lg hover:bg-iris-50 shadow-lg transition-colors"
             >
               Start a Community

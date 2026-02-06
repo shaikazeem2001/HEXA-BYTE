@@ -21,12 +21,23 @@ const Login = () => {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem('userId', res.data.user.id);
       localStorage.setItem('username', res.data.user.username);
+      localStorage.removeItem('isGuest');
       navigate("/profile");
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGuestLogin = () => {
+    const guestId = Math.random().toString(36).substring(7);
+    const guestUsername = `Guest_${guestId}`;
+    localStorage.clear();
+    localStorage.setItem("username", guestUsername);
+    localStorage.setItem("userId", `guest_${guestId}`);
+    localStorage.setItem("isGuest", "true");
+    navigate("/profile");
   };
 
   return (
@@ -78,9 +89,16 @@ const Login = () => {
             {isLoading ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} className="group-hover:translate-x-1 transition-transform" />}
             LOGIN
           </button>
+
+          <h4
+            onClick={handleGuestLogin}
+            className="w-full bg-transparent cursor-pointer text-gray-400 hover:text-white font-bold py-3 rounded-2xl transition-all  active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
+          >
+            Continue as Guest
+          </h4>
         </div>
 
-        <div className="mt-12 text-center border-t border-gray-800 pt-6">
+        <div className="mt-12 text-center">
           <p className="text-gray-500 text-sm">
             Don't have an account?{" "}
             <Link to="/signup" className="text-iris-500 hover:text-iris-400 font-bold transition-colors inline-flex items-center gap-1 group">
