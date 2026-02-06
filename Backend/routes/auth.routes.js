@@ -34,8 +34,11 @@ router.post("/signup", async (req, res) => {
     });
 
   } catch (error) {
-    console.log("Signup error:", error);
-    return res.status(500).json({ message: "Server error" });
+    console.error("Signup Error Detailed:", error);
+    return res.status(500).json({ 
+      message: "Server error", 
+      error: process.env.NODE_ENV === "development" ? error.message : undefined 
+    });
   }
 });
 
@@ -81,8 +84,11 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error) {
-    console.log("Login error:", error);
-    return res.status(500).json({ message: "Server error" });
+    console.error("Login Error Detailed:", error);
+    return res.status(500).json({ 
+      message: "Server error", 
+      error: process.env.NODE_ENV === "development" ? error.message : undefined 
+    });
   }
 });
 
