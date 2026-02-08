@@ -3,29 +3,16 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
-const mongoose = require("mongoose");
-const connectDB = require("./config/db");
+const supabase = require("./config/supabase");
 
 // Load ENV
 dotenv.config();
-
-// Check for Critical ENV Vars
-if (!process.env.MONGO_URI) {
-  console.error("CRITICAL ERROR: MONGO_URI is missing from environment variables.");
-}
-
-// Connect MongoDB
-connectDB();
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Models
-const Room = require("./models/Room");
-const Message = require("./models/Message");
 
 // Routes
 const authRoutes = require("./routes/auth.routes");
@@ -38,7 +25,7 @@ app.use("/api/rooms", roomRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
-  res.send("server is working with MongoDB");
+  res.send("server is working with Supabase");
 });
 
 // Create HTTP server
@@ -64,34 +51,50 @@ io.on("connection", (socket) => {
   socket.on("send_message", async (data) => {
     try {
       // Find room by name or ID
-      let roomObj;
-      if (mongoose.Types.ObjectId.isValid(data.room)) {
-        roomObj = await Room.findById(data.room);
-      } else {
-        roomObj = await Room.findOne({ name: data.room });
+      let roomId = data.room;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+      if (!uuidRegex.test(data.room)) {
+        const { data: roomObj, error: fetchError } = await supabase
+          .from('rooms')
+          .select('id')
+          .eq('name', data.room)
+          .single();
+
+        if (fetchError || !roomObj) {
+          // Create room if it doesn't exist
+          const { data: newRoom, error: insertError } = await supabase
+            .from('rooms')
+            .insert([{ name: data.room, created_by: data.senderId }])
+            .select()
+            .single();
+          
+          if (insertError) throw insertError;
+          roomId = newRoom.id;
+        } else {
+          roomId = roomObj.id;
+        }
       }
 
-      if (!roomObj) {
-        // Create room if it doesn't exist
-        roomObj = new Room({
-          name: data.room,
-          createdBy: data.senderId
-        });
-        await roomObj.save();
-      }
+      // Save message to Supabase
+      const { data: newMessage, error: msgError } = await supabase
+        .from('messages')
+        .insert([
+          {
+            room_id: roomId,
+            sender_id: data.senderId,
+            text: data.text
+          }
+        ])
+        .select('*, users(username, avatar)')
+        .single();
 
-      // Save message to MongoDB
-      const newMessage = new Message({
-        room: roomObj._id,
-        sender: data.senderId,
-        text: data.text
-      });
-      await newMessage.save();
+      if (msgError) throw msgError;
 
       // Emit to everyone in the room
-      const populatedMsg = await Message.findById(newMessage._id).populate("sender", "username avatar");
       io.to(data.room).emit("receive_message", {
-        ...populatedMsg._doc,
+        ...newMessage,
+        sender: newMessage.users ? { _id: newMessage.sender_id, username: newMessage.users.username, avatar: newMessage.users.avatar } : newMessage.sender_id,
         room: data.room // Keep the room name for frontend compatibility
       });
     } catch (err) {

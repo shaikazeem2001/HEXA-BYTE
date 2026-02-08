@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const supabase = require("../config/supabase");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // signup routes
 router.post("/signup", async (req, res) => {
-  // Check for JWT_SECRET
   if (!process.env.JWT_SECRET) {
     console.error("CRITICAL ERROR: JWT_SECRET is not defined in environment variables.");
     return res.status(500).json({ message: "Server configuration error" });
@@ -20,7 +19,12 @@ router.post("/signup", async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('users')
+      .select('email')
+      .eq('email', email)
+      .single();
+
     if (existingUser) {
       return res.status(400).json({ message: "User already registered" });
     }
@@ -29,11 +33,18 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
+    const { data: newUser, error: insertError } = await supabase
+      .from('users')
+      .insert([
+        { username, email, password: hashedPassword }
+      ])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Supabase Insert Error:", insertError);
+      return res.status(500).json({ message: "Failed to create user", error: insertError.message });
+    }
 
     return res.status(201).json({
       message: "User registered successfully",
@@ -43,8 +54,7 @@ router.post("/signup", async (req, res) => {
     console.error("Signup Error Detailed:", error);
     return res.status(500).json({ 
       message: "Server error", 
-      error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+      error: error.message
     });
   }
 });
@@ -61,7 +71,6 @@ router.get("/profile", authMiddleware, (req, res) => {
 
 // login routes
 router.post("/login", async (req, res) => {
-  // Check for JWT_SECRET
   if (!process.env.JWT_SECRET) {
     console.error("CRITICAL ERROR: JWT_SECRET is not defined in environment variables.");
     return res.status(500).json({ message: "Server configuration error" });
@@ -70,8 +79,13 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (fetchError || !user) {
       return res.status(400).json({ message: "User not found" });
     }
 
@@ -82,7 +96,7 @@ router.post("/login", async (req, res) => {
 
     // Create Token
     const token = jwt.sign(
-      { id: user._id },
+      { id: user.id },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -91,7 +105,7 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email
       }
@@ -100,8 +114,7 @@ router.post("/login", async (req, res) => {
     console.error("Login Error Detailed:", error);
     return res.status(500).json({ 
       message: "Server error", 
-      error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+      error: error.message
     });
   }
 });
