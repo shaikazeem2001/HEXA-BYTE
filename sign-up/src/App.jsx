@@ -7,6 +7,7 @@ import JoinRoom from "./components/JoinRoom";
 import Exploretopics from "./components/Exploretopics";
 import Layout from "./components/Layout";
 import PrivateRooms from "./components/PrivateRooms";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -15,12 +16,12 @@ function App() {
       <Route path="/signup" element={<Signup />} />
 
       {/* Protected/Authenticated Routes within Layout */}
-      <Route path="/profile" element={<Layout><Profilepage /></Layout>} />
-      <Route path="/join" element={<Layout><JoinRoom /></Layout>} />
-      <Route path="/exploretopics" element={<Layout><Exploretopics /></Layout>} />
-      <Route path="/communities/:id" element={<Layout><ChatUI /></Layout>} />
-      <Route path="/privaterooms" element={<Layout><PrivateRooms /></Layout>} />
-      <Route path="/chat/:roomId" element={<Layout><ChatUI /></Layout>} />
+      <Route path="/profile" element={<ProtectedRoute><Layout><Profilepage /></Layout></ProtectedRoute>} />
+      <Route path="/join" element={<ProtectedRoute><Layout><JoinRoom /></Layout></ProtectedRoute>} />
+      <Route path="/exploretopics" element={<ProtectedRoute><Layout><Exploretopics /></Layout></ProtectedRoute>} />
+      <Route path="/communities/:id" element={<ProtectedRoute><Layout><ChatUI /></Layout></ProtectedRoute>} />
+      <Route path="/privaterooms" element={<ProtectedRoute><Layout><PrivateRooms /></Layout></ProtectedRoute>} />
+      <Route path="/chat/:roomId" element={<ProtectedRoute><Layout><ChatUI /></Layout></ProtectedRoute>} />
     </Routes>
   );
 }

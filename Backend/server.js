@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const http = require("http");
+const path = require("path");
 const { Server } = require("socket.io");
 const supabase = require("./config/supabase");
 
@@ -10,9 +11,8 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Serve static files from the React app build
+app.use(express.static(path.join(__dirname, "../sign-up/dist")));
 
 // Routes
 const authRoutes = require("./routes/auth.routes");
@@ -23,8 +23,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/rooms", roomRoutes);
 
-// Test Route
-app.get("/", (req, res) => {
+// Catch-all handler for SPA
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
+});
+
+// Test Route (Internal use)
+app.get("/api/health", (req, res) => {
   res.send("server is working with Supabase");
 });
 
