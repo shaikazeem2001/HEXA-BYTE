@@ -23,10 +23,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/rooms", roomRoutes);
 
-// Catch-all handler for SPA
-app.get("(.*)", (req, res) => {
-  res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
-});
 
 // Test Route (Internal use)
 app.get("/api/health", (req, res) => {
@@ -110,6 +106,10 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
+});
+// Catch-all handler for SPA
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
 });
 
 // Port
