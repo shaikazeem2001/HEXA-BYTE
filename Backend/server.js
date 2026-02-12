@@ -108,7 +108,7 @@ io.on("connection", (socket) => {
   });
 });
 // Catch-all handler for SPA
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
 });
 
