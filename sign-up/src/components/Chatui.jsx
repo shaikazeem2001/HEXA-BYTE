@@ -3,7 +3,8 @@ import { io } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
 import { Send, Hash, Users, Shield, ArrowLeft } from "lucide-react";
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
+const API_URL = BASE_URL.replace(/\/$/, "");
 const socket = io("https://vibe-chat-production-e694.up.railway.app");
 
 const ChatUI = () => {

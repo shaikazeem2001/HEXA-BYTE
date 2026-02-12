@@ -9,7 +9,9 @@ const supabase = require("./config/supabase");
 // Load ENV
 dotenv.config();
 
-const app = express();
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Serve static files from the React app build
 app.use(express.static(path.join(__dirname, "../sign-up/dist")));
