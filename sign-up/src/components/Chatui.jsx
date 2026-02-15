@@ -1,13 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { io } from "socket.io-client";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, Hash, Users, Shield, ArrowLeft } from "lucide-react";
+import { Send, Hash, Users, Shield, ArrowLeft, LogIn } from "lucide-react";
 import axios from "axios";
+
 const BASE_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
 const API_URL = BASE_URL.replace(/\/$/, "");
-const socket = io("https://vibe-chat-production-e694.up.railway.app");
 
 const ChatUI = () => {
+  const socket = useMemo(() => io(API_URL, {
+    transports: ["websocket", "polling"],
+    withCredentials: true
+  }), []);
+
   const { id: communityId, roomId } = useParams();
   const navigate = useNavigate();
 

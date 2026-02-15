@@ -9,6 +9,8 @@ const supabase = require("./config/supabase");
 // Load ENV
 dotenv.config();
 
+const app = express();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -37,8 +39,9 @@ const server = http.createServer(app);
 // Attach Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: ["https://vibe-chat-production-e694.up.railway.app", "https://vibe-chat-7if86p2vc-shaikazeem2001s-projects.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
