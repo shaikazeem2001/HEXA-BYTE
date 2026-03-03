@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { LogOut, TrendingUp, Users, MessageSquare, Plus, X, Globe, Lock, Copy, CheckCircle2, Loader2 } from "lucide-react";
 import axios from "../api/Axios";
 
-const BASE_URL = "https://vibe-chat-production-e694.up.railway.app";
-const API_URL = BASE_URL.replace(/\/$/, "");
 
 const Profilepage = () => {
   const navigate = useNavigate();
@@ -28,7 +26,7 @@ const Profilepage = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.post(`${API_URL}/api/rooms`, newCommunity, {
+      const res = await axios.post(`/api/rooms`, newCommunity, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -65,16 +63,16 @@ const Profilepage = () => {
     <div className="max-w-6xl mx-auto">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-2">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-            Welcome back, {username}! {isGuest && <span className="text-xs bg-iris-600/30 text-iris-400 px-2 py-0.5 rounded-full ml-2 align-middle font-normal uppercase tracking-wider border border-iris-500/30">Guest Mode</span>}
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">
+            Welcome back, {username}! {isGuest && <span className="text-xs bg-iris-50 dark:bg-iris-600/30 text-iris-600 dark:text-iris-400 px-2 py-0.5 rounded-full ml-2 align-middle font-normal uppercase tracking-wider border border-iris-500/30">Guest Mode</span>}
           </h1>
-          <p className="text-gray-400 mt-1 text-sm md:text-base italic">
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm md:text-base italic transition-colors">
             {isGuest ? "You are exploring as a guest. Sign in to join communities!" : "Check out what's happening in your communities."}
           </p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors border border-gray-700"
+          className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg transition-colors border border-gray-300 dark:border-gray-700"
         >
           <LogOut size={18} />
           Logout
@@ -92,21 +90,21 @@ const Profilepage = () => {
             {joinedCommunities.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {joinedCommunities.map((community, index) => (
-                  <div key={index} className="bg-gray-900 border border-gray-800 p-5 rounded-xl hover:border-iris-500/50 transition-all cursor-pointer group" onClick={() => {
+                  <div key={index} className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl hover:border-iris-500/50 transition-all cursor-pointer group" onClick={() => {
                     localStorage.setItem("room", community.id);
                     navigate(`/communities/${community.id}`);
                   }}>
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-white group-hover:text-iris-500">{community.name}</h3>
-                      <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">Joined</span>
+                      <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-iris-500 transition-colors">{community.name}</h3>
+                      <span className="text-xs bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded transition-colors">Joined</span>
                     </div>
-                    <p className="text-sm text-gray-400 line-clamp-2">{community.description}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 transition-colors">{community.description}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-                <p className="text-gray-400 mb-4">You haven't joined any communities yet.</p>
+              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center transition-colors">
+                <p className="text-gray-500 dark:text-gray-400 mb-4 transition-colors">You haven't joined any communities yet.</p>
                 <button
                   onClick={() => navigate('/join')}
                   className="text-iris-500 hover:text-iris-400 font-semibold"
@@ -122,8 +120,8 @@ const Profilepage = () => {
               <MessageSquare size={20} className="text-blue-500" />
               Recent Conversations
             </h2>
-            <div className="bg-gray-900 border border-gray-800 rounded-xl divide-y divide-gray-800">
-              <div className="p-4 text-sm text-gray-500 italic">
+            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl divide-y divide-gray-200 dark:divide-gray-800 transition-colors">
+              <div className="p-4 text-sm text-gray-500 dark:text-gray-400 italic transition-colors">
                 No recent private chats.
               </div>
             </div>
@@ -132,7 +130,7 @@ const Profilepage = () => {
 
         {/* Sidebar: Trending / Suggestions */}
         <div className="space-y-6">
-          <section className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <section className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 transition-colors">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <TrendingUp size={20} className="text-green-500" />
               Trending Communities
@@ -141,16 +139,16 @@ const Profilepage = () => {
               {trending.map((item) => (
                 <div key={item.id} className="flex justify-between items-center group cursor-pointer">
                   <div>
-                    <p className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{item.name}</p>
-                    <p className="text-xs text-gray-500">{item.members} members</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{item.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 transition-colors">{item.members} members</p>
                   </div>
-                  <button className="text-xs font-bold text-iris-500 hover:text-iris-400 border border-iris-500/30 px-3 py-1 rounded-full">
+                  <button className="text-xs font-bold text-iris-600 dark:text-iris-500 hover:text-iris-500 dark:hover:text-iris-400 border border-iris-500/30 px-3 py-1 rounded-full transition-colors">
                     View
                   </button>
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 text-sm text-gray-400 hover:text-white font-medium transition-colors">
+            <button className="w-full mt-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors">
               Show more
             </button>
           </section>
@@ -178,7 +176,7 @@ const Profilepage = () => {
       {/* Create Community Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200 transition-colors">
             {createdRoom ? (
               <div className="text-center py-4">
                 <div className="flex justify-center mb-6">
@@ -186,15 +184,15 @@ const Profilepage = () => {
                     <CheckCircle2 size={48} />
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Community Created!</h2>
-                <p className="text-gray-400 mb-8">Share this invite code with your friends to join your private room.</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">Community Created!</h2>
+                <p className="text-gray-500 dark:text-gray-400 mb-8 transition-colors">Share this invite code with your friends to join your private room.</p>
 
-                <div className="bg-black border border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 group cursor-pointer" onClick={() => {
+                <div className="bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 group cursor-pointer transition-colors" onClick={() => {
                   navigator.clipboard.writeText(createdRoom.inviteCode);
                   alert("Invite code copied!");
                 }}>
-                  <span className="text-xl font-mono font-bold text-iris-400 tracking-wider uppercase">{createdRoom.inviteCode}</span>
-                  <Copy size={20} className="text-gray-500 group-hover:text-white" />
+                  <span className="text-xl font-mono font-bold text-iris-600 dark:text-iris-400 tracking-wider uppercase transition-colors">{createdRoom.inviteCode}</span>
+                  <Copy size={20} className="text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
                 </div>
 
                 <button
@@ -211,47 +209,47 @@ const Profilepage = () => {
             ) : (
               <>
                 <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-black text-white tracking-tight">New Community</h2>
-                  <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight transition-colors">New Community</h2>
+                  <button onClick={() => setIsModalOpen(false)} className="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <X size={24} />
                   </button>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Community Name</label>
+                    <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Community Name</label>
                     <input
                       type="text"
                       placeholder="e.g. PixelArt Enthusiasts"
-                      className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium"
+                      className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium"
                       value={newCommunity.name}
                       onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Description (Optional)</label>
+                    <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Description (Optional)</label>
                     <textarea
                       placeholder="What is this community about?"
-                      className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium h-24 resize-none"
+                      className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium h-24 resize-none"
                       value={newCommunity.description}
                       onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Visibility</label>
+                    <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Visibility</label>
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         onClick={() => setNewCommunity({ ...newCommunity, isPrivate: false })}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${!newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${!newCommunity.isPrivate ? "bg-iris-50 dark:bg-iris-600/10 border-iris-500 text-iris-600 dark:text-white" : "bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"}`}
                       >
                         <Globe size={20} />
                         <span className="text-xs font-bold uppercase tracking-tight">Public</span>
                       </button>
                       <button
                         onClick={() => setNewCommunity({ ...newCommunity, isPrivate: true })}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${newCommunity.isPrivate ? "bg-iris-50 dark:bg-iris-600/10 border-iris-500 text-iris-600 dark:text-white" : "bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"}`}
                       >
                         <Lock size={20} />
                         <span className="text-xs font-bold uppercase tracking-tight">Private</span>

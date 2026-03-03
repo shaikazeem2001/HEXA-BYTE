@@ -42,17 +42,17 @@ const Exploretopics = () => {
   return (
     <div className="max-w-6xl mx-auto py-4 md:py-8 px-4">
       {/* Hero Section */}
-      <div className="mb-12 relative overflow-hidden bg-gradient-to-r from-gray-900 to-black p-6 md:p-10 rounded-[32px] border border-gray-800 shadow-2xl">
+      <div className="mb-12 relative overflow-hidden bg-white dark:bg-gradient-to-r dark:from-gray-900 dark:to-black p-6 md:p-10 rounded-[32px] border border-gray-200 dark:border-gray-800 shadow-2xl transition-colors">
         <div className="relative z-10 max-w-2xl">
           <div className="flex items-center gap-2 mb-4">
-            <Compass className="text-iris-500 animate-pulse" size={20} />
-            <span className="text-[10px] font-bold text-iris-500 uppercase tracking-[0.2em]">Discovery Mode</span>
+            <Compass className="text-iris-600 dark:text-iris-500 animate-pulse transition-colors" size={20} />
+            <span className="text-[10px] font-bold text-iris-600 dark:text-iris-500 uppercase tracking-[0.2em] transition-colors">Discovery Mode</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
-            Explore What's <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-iris-400 to-iris-600">Trending Now</span>
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4 leading-tight transition-colors">
+            Explore What's <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-iris-500 to-iris-700 dark:from-iris-400 dark:to-iris-600">Trending Now</span>
           </h1>
-          <p className="text-gray-400 text-sm md:text-lg mb-8 leading-relaxed">
-            Dive into specialized topics<span className="text-white font-bold"></span>. Join the conversation and vibe with like-minded people.
+          <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg mb-8 leading-relaxed transition-colors">
+            Dive into specialized topics<span className="text-gray-900 dark:text-white font-bold transition-colors"></span>. Join the conversation and vibe with like-minded people.
           </p>
 
           {/* Search Bar */}
@@ -61,7 +61,7 @@ const Exploretopics = () => {
             <input
               type="text"
               placeholder="Search for a topic..."
-              className="w-full bg-black/50 border border-gray-700/50 text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500/50 transition-all backdrop-blur-md"
+              className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-gray-700/50 text-gray-900 dark:text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500/50 transition-all backdrop-blur-md"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
@@ -73,11 +73,11 @@ const Exploretopics = () => {
 
       {/* Grid Header */}
       <div className="flex justify-between items-center mb-8 px-2">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3 transition-colors">
           <TrendingUp size={24} className="text-green-500" />
           Active Sub-channels
         </h2>
-        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{filteredTopics.length} Topics Found</span>
+        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest transition-colors">{filteredTopics.length} Topics Found</span>
       </div>
 
       {/* Topic Grid */}
@@ -86,25 +86,25 @@ const Exploretopics = () => {
           <button
             key={topic.id}
             onClick={() => joinTopic(topic.id)}
-            className="group relative flex flex-col items-start p-8 bg-gray-900/40 border border-gray-800 rounded-3xl text-left hover:border-white/20 hover:bg-gray-800/40 transition-all duration-300 shadow-xl overflow-hidden active:scale-[0.98]"
+            className="group relative flex flex-col items-start p-8 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-3xl text-left hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-100 dark:hover:bg-gray-800/40 transition-all duration-300 shadow-xl overflow-hidden active:scale-[0.98]"
           >
             {/* Hover Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-black/5 dark:from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
             <div className={`p-4 rounded-2xl mb-6 ${topic.bg} ${topic.color} transition-transform group-hover:scale-110 duration-500`}>
               {topic.icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-iris-400 transition-colors">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight group-hover:text-iris-600 dark:group-hover:text-iris-400 transition-colors">
               {topic.name}
             </h3>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">
+            <p className="text-gray-500 dark:text-gray-500 text-sm leading-relaxed mb-6 transition-colors">
               {topic.desc}
             </p>
 
-            <div className="mt-auto flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">
+            <div className="mt-auto flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-widest group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
               <span>Enter Channel</span>
-              <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+              <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full transition-colors"></span>
               <span className="text-green-500">Active</span>
             </div>
           </button>
@@ -112,9 +112,9 @@ const Exploretopics = () => {
       </div>
 
       {filteredTopics.length === 0 && (
-        <div className="text-center py-20 border border-dashed border-gray-800 rounded-3xl bg-gray-900/10">
-          <p className="text-gray-500 text-xl font-medium mb-2">No matches found for "{searchTerm}"</p>
-          <p className="text-gray-600 text-sm">Try searching for popular topics like Anime, Technology or Movies.</p>
+        <div className="text-center py-20 border border-dashed border-gray-200 dark:border-gray-800 rounded-3xl bg-gray-50 dark:bg-gray-900/10 transition-colors">
+          <p className="text-gray-600 dark:text-gray-500 text-xl font-medium mb-2 transition-colors">No matches found for "{searchTerm}"</p>
+          <p className="text-gray-500 dark:text-gray-600 text-sm transition-colors">Try searching for popular topics like Anime, Technology or Movies.</p>
         </div>
       )}
     </div>

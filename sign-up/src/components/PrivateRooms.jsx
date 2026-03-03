@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Plus, Key, ArrowRight, ShieldCheck, Loader2, Globe, X, Copy, CheckCircle2 } from "lucide-react";
 import axios from "../api/Axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app";
 
 const PrivateRooms = () => {
     const navigate = useNavigate();
@@ -27,7 +26,7 @@ const PrivateRooms = () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post(`${API_URL}/api/rooms/join/invite`, { inviteCode: roomCode }, {
+            const res = await axios.post(`/api/rooms/join/invite`, { inviteCode: roomCode }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -55,7 +54,7 @@ const PrivateRooms = () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post(`${API_URL}/api/rooms`, newCommunity, {
+            const res = await axios.post(`/api/rooms`, newCommunity, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -84,11 +83,11 @@ const PrivateRooms = () => {
         <div className="max-w-7xl mx-auto py-8 px-4 md:px-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                 <div>
-                    <h1 className="text-4xl font-black text-white mb-2 flex items-center gap-3">
-                        <Lock className="text-iris-500" size={32} />
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2 flex items-center gap-3 transition-colors">
+                        <Lock className="text-iris-600 dark:text-iris-500 transition-colors" size={32} />
                         Private Rooms
                     </h1>
-                    <p className="text-gray-400">Secure spaces for your private and exclusive conversations.</p>
+                    <p className="text-gray-500 dark:text-gray-400 transition-colors">Secure spaces for your private and exclusive conversations.</p>
                 </div>
                 <button
                     onClick={() => navigate('/profile')}
@@ -110,25 +109,25 @@ const PrivateRooms = () => {
                                 <div
                                     key={room._id}
                                     onClick={() => navigate(`/communities/${room._id}`)}
-                                    className="bg-gray-900 border border-gray-800 p-5 rounded-2xl hover:border-iris-500/50 transition-all cursor-pointer group flex justify-between items-center"
+                                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-2xl hover:border-iris-500/50 transition-all cursor-pointer group flex justify-between items-center"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-iris-600/10 rounded-xl flex items-center justify-center text-iris-500">
+                                        <div className="w-12 h-12 bg-iris-50 dark:bg-iris-600/10 rounded-xl flex items-center justify-center text-iris-600 dark:text-iris-500 transition-colors">
                                             <ShieldCheck size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-white group-hover:text-iris-500 transition-colors">{room.name}</h3>
-                                            <p className="text-xs text-gray-500 flex items-center gap-1 uppercase tracking-tight font-black">
+                                            <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-iris-600 dark:group-hover:text-iris-500 transition-colors">{room.name}</h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-500 flex items-center gap-1 uppercase tracking-tight font-black transition-colors">
                                                 Private Member
                                             </p>
                                         </div>
                                     </div>
-                                    <ArrowRight size={20} className="text-gray-700 group-hover:text-iris-500 transform group-hover:translate-x-1 transition-all" />
+                                    <ArrowRight size={20} className="text-gray-400 dark:text-gray-700 group-hover:text-iris-600 dark:group-hover:text-iris-500 transform group-hover:translate-x-1 transition-all" />
                                 </div>
                             ))
                         ) : (
-                            <div className="border-2 border-dashed border-gray-800 rounded-2xl p-10 text-center">
-                                <p className="text-gray-600 italic">No private rooms joined yet.</p>
+                            <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-10 text-center transition-colors">
+                                <p className="text-gray-500 dark:text-gray-600 italic transition-colors">No private rooms joined yet.</p>
                             </div>
                         )}
                     </div>
@@ -154,23 +153,23 @@ const PrivateRooms = () => {
                 </section>
 
                 {/* Join by code section */}
-                <section className="bg-gray-900 border border-gray-800 rounded-3xl p-8 md:p-10 flex flex-col justify-center h-fit sticky top-8">
+                <section className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 md:p-10 flex flex-col justify-center h-fit sticky top-8 transition-colors">
 
                     <div className="mb-8">
-                        <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-2">
-                            <Key size={24} className="text-iris-500" />
+                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2 transition-colors">
+                            <Key size={24} className="text-iris-600 dark:text-iris-500 transition-colors" />
                             Join via Private ID
                         </h2>
-                        <p className="text-sm text-gray-400 italic">Have an invitation code? Enter it below to join a secure room instantly.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic transition-colors">Have an invitation code? Enter it below to join a secure room instantly.</p>
                     </div>
 
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Invite Code</label>
+                            <label className="text-[10px] font-black text-gray-500 dark:text-gray-500 uppercase tracking-[0.2em] px-1 transition-colors">Invite Code</label>
                             <input
                                 type="text"
                                 placeholder="e.g. A1B2C3"
-                                className="w-full bg-black border border-gray-800 rounded-2xl px-4 py-5 text-center text-2xl font-black tracking-[0.3em] text-white focus:outline-none focus:border-iris-500 transition-all uppercase placeholder:tracking-normal placeholder:opacity-20"
+                                className="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-2xl px-4 py-5 text-center text-2xl font-black tracking-[0.3em] text-gray-900 dark:text-white focus:outline-none focus:border-iris-500 transition-all uppercase placeholder:tracking-normal placeholder:opacity-20 shadow-inner"
                                 value={roomCode}
                                 onChange={(e) => setRoomCode(e.target.value)}
                                 maxLength={6}
@@ -197,7 +196,7 @@ const PrivateRooms = () => {
             {/* Create Community Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                    <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200 transition-colors">
                         {createdRoom ? (
                             <div className="text-center py-4">
                                 <div className="flex justify-center mb-6">
@@ -205,15 +204,15 @@ const PrivateRooms = () => {
                                         <CheckCircle2 size={48} />
                                     </div>
                                 </div>
-                                <h2 className="text-2xl font-bold text-white mb-2">Community Created!</h2>
-                                <p className="text-gray-400 mb-8">Share this invite code with your friends to join your private room.</p>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">Community Created!</h2>
+                                <p className="text-gray-500 dark:text-gray-400 mb-8 transition-colors">Share this invite code with your friends to join your private room.</p>
 
-                                <div className="bg-black border border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 group cursor-pointer" onClick={() => {
+                                <div className="bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 rounded-2xl flex items-center justify-between mb-8 group cursor-pointer transition-colors" onClick={() => {
                                     navigator.clipboard.writeText(createdRoom.inviteCode);
                                     alert("Invite code copied!");
                                 }}>
-                                    <span className="text-xl font-mono font-bold text-iris-400 tracking-wider uppercase">{createdRoom.inviteCode}</span>
-                                    <Copy size={20} className="text-gray-500 group-hover:text-white" />
+                                    <span className="text-xl font-mono font-bold text-iris-600 dark:text-iris-400 tracking-wider uppercase transition-colors">{createdRoom.inviteCode}</span>
+                                    <Copy size={20} className="text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
                                 </div>
 
                                 <button
@@ -230,47 +229,47 @@ const PrivateRooms = () => {
                         ) : (
                             <>
                                 <div className="flex justify-between items-center mb-8">
-                                    <h2 className="text-2xl font-black text-white tracking-tight">New Community</h2>
-                                    <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight transition-colors">New Community</h2>
+                                    <button onClick={() => setIsModalOpen(false)} className="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                                         <X size={24} />
                                     </button>
                                 </div>
 
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Community Name</label>
+                                        <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Community Name</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. PixelArt Enthusiasts"
-                                            className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium"
+                                            className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium"
                                             value={newCommunity.name}
                                             onChange={(e) => setNewCommunity({ ...newCommunity, name: e.target.value })}
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Description (Optional)</label>
+                                        <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Description (Optional)</label>
                                         <textarea
                                             placeholder="What is this community about?"
-                                            className="w-full bg-black border border-gray-800 text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium h-24 resize-none"
+                                            className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all font-medium h-24 resize-none"
                                             value={newCommunity.description}
                                             onChange={(e) => setNewCommunity({ ...newCommunity, description: e.target.value })}
                                         />
                                     </div>
 
                                     <div className="space-y-3">
-                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest px-1">Visibility</label>
+                                        <label className="text-xs font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest px-1">Visibility</label>
                                         <div className="grid grid-cols-2 gap-4">
                                             <button
                                                 onClick={() => setNewCommunity({ ...newCommunity, isPrivate: false })}
-                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${!newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${!newCommunity.isPrivate ? "bg-iris-50 dark:bg-iris-600/10 border-iris-500 text-iris-600 dark:text-white" : "bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"}`}
                                             >
                                                 <Globe size={20} />
                                                 <span className="text-xs font-bold uppercase tracking-tight">Public</span>
                                             </button>
                                             <button
                                                 onClick={() => setNewCommunity({ ...newCommunity, isPrivate: true })}
-                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${newCommunity.isPrivate ? "bg-iris-600/10 border-iris-500 text-white" : "bg-black border-gray-800 text-gray-500 hover:border-gray-700"}`}
+                                                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${newCommunity.isPrivate ? "bg-iris-50 dark:bg-iris-600/10 border-iris-500 text-iris-600 dark:text-white" : "bg-gray-50 dark:bg-black border-gray-200 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900"}`}
                                             >
                                                 <Lock size={20} />
                                                 <span className="text-xs font-bold uppercase tracking-tight">Private</span>

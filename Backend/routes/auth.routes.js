@@ -62,11 +62,143 @@ router.post("/signup", async (req, res) => {
 // middleware route 
 const authMiddleware = require("../middleware/auth.middleware");
 
-router.get("/profile", authMiddleware, (req, res) => {
-  res.json({
-    message: "Protected data accessed",
-    userId: req.user.id
-  });
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, username, email, avatar')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let avatarConfig = null;
+    let settings = null;
+    try {
+      if (user.avatar) {
+          // Check if it's the new combined format or the old format
+          const parsed = JSON.parse(user.avatar);
+          if (parsed.avatarConfig || parsed.settings) {
+              avatarConfig = parsed.avatarConfig || null;
+              settings = parsed.settings || null;
+          } else {
+              // Legacy format
+              avatarConfig = parsed;
+          }
+      }
+    } catch (e) {
+      console.warn("Could not parse json", e);
+    }
+
+    res.json({
+      message: "Protected data accessed",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatarConfig,
+        settings
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Fetch another user's public info (e.g. for chat avatars)
+router.get("/user/:id", authMiddleware, async (req, res) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('username, avatar')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let avatarConfig = null;
+    try {
+      if (user.avatar) {
+          const parsed = JSON.parse(user.avatar);
+          if (parsed.avatarConfig || parsed.settings) {
+              avatarConfig = parsed.avatarConfig || null;
+          } else {
+              avatarConfig = parsed;
+          }
+      }
+    } catch (e) { }
+
+    res.json({
+      username: user.username,
+      avatarConfig
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { username, currentPassword, newPassword, avatarConfig, settings } = req.body;
+    let updateData = {};
+
+    if (username) updateData.username = username;
+
+    // Fetch user first to get existing avatar/settings data
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('avatar, password')
+      .eq('id', req.user.id)
+      .single();
+
+    // Handle avatar & settings combining into existing column
+    if (avatarConfig || settings) {
+        let currentCombined = {};
+        try {
+            if (existingUser?.avatar) {
+               const parsed = JSON.parse(existingUser.avatar);
+               if (parsed.avatarConfig || parsed.settings) {
+                   currentCombined = parsed;
+               } else {
+                   currentCombined = { avatarConfig: parsed };
+               }
+            }
+        } catch(e) {}
+
+        if (avatarConfig) currentCombined.avatarConfig = avatarConfig;
+        if (settings) currentCombined.settings = settings;
+
+        updateData.avatar = JSON.stringify(currentCombined);
+    }
+
+    // Fetch user if password change requested
+    if (currentPassword && newPassword) {
+       if (existingUser) {
+         const isMatch = await bcrypt.compare(currentPassword, existingUser.password);
+         if (!isMatch) return res.status(400).json({ message: "Invalid current password" });
+         updateData.password = await bcrypt.hash(newPassword, 10);
+       }
+    }
+
+    if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+          .from('users')
+          .update(updateData)
+          .eq('id', req.user.id);
+        
+        if (error) throw error;
+    }
+    
+    res.json({ message: "Profile updated successfully" });
+
+  } catch (err) {
+    console.error("Profile Update Error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 });
 
 // login routes
@@ -101,15 +233,31 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    return res.json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email
-      }
-    });
+      let avatarConfig = null;
+      let settingsConfig = null;
+      try {
+        if (user.avatar) {
+          const parsed = JSON.parse(user.avatar);
+          if (parsed.avatarConfig || parsed.settings) {
+              avatarConfig = parsed.avatarConfig || null;
+              settingsConfig = parsed.settings || null;
+          } else {
+              avatarConfig = parsed;
+          }
+        }
+      } catch (e) { }
+
+      return res.json({
+        message: "Login successful",
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          avatarConfig,
+          settings: settingsConfig
+        }
+      });
   } catch (error) {
     console.error("Login Error Detailed:", error);
     return res.status(500).json({ 
