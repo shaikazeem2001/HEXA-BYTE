@@ -131,14 +131,17 @@ const ChatUI = () => {
     fetchUserAndToken();
   }, [isGuest]);
 
+  // Provide fallback structure or prevent initialization until user loads
   const client = useCreateChatClient({
     apiKey,
     tokenOrProvider: dynamicToken,
-    userData: streamUser,
+    // Stream requires userData.id to immediately be available or it crashes
+    userData: streamUser || { id: "loading" },
   });
 
   useEffect(() => {
-    if (!client || !streamUser || !dynamicToken) return;
+    // Do not initialize channel if we are still fetching real credentials
+    if (!client || !streamUser || streamUser.id === "loading" || !dynamicToken) return;
 
     // Stream Channel IDs cannot contain certain characters like ":"
     const sanitizedId = activeRoom.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -151,7 +154,8 @@ const ChatUI = () => {
     setChannel(newChannel);
   }, [client, activeRoom, streamUser, dynamicToken]);
 
-  if (!client || !channel || !streamUser) {
+  // Loading state guard
+  if (!client || !channel || !streamUser || streamUser.id === "loading" || !dynamicToken) {
     return (
       <div className="flex flex-col h-[80vh] bg-gray-50/50 dark:bg-gray-950/50 rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl items-center justify-center text-gray-900 dark:text-white w-full max-w-6xl mx-auto animate-pulse transition-colors duration-300">
         <div className="w-12 h-12 border-4 border-iris-500 border-t-transparent rounded-full animate-spin mb-4"></div>
