@@ -80,12 +80,8 @@ const ChatUI = () => {
     return () => observer.disconnect();
   }, []);
 
-  const [streamUser, setStreamUser] = useState(() => {
-    return {
-      id: "throbbing-sky-5", // Must match the provided developer token
-      name: localStorage.getItem("username") || (isGuest ? "Guest" : "Loading...")
-    };
-  });
+  const [streamUser, setStreamUser] = useState(null);
+  const [dynamicToken, setDynamicToken] = useState(null);
 
   const activeRoom = communityId || roomId || "general";
   const isPrivate = !!roomId;
@@ -97,37 +93,52 @@ const ChatUI = () => {
         id: localStorage.getItem("userId") || 'guest_user',
         name: localStorage.getItem("username") || 'Guest',
       });
+      // Guests don't have backend profiles, so we fallback to dev token/static token
+      // depending on Stream app settings. If auth is enabled, they need a token.
+      setDynamicToken(userToken);
       return;
     }
 
-    const fetchUser = async () => {
+    const fetchUserAndToken = async () => {
       try {
         const res = await axios.get("/api/auth/profile");
         const u = res.data.user;
+
         const mappedUser = {
-          id: "throbbing-sky-5", // Dev stream token requires this ID
+          id: u.id,
           name: u.username,
-          // Stream strongly encourages using existing fields or placing everything else at top-level
           avatarConfig: u.avatarConfig || undefined,
         };
-        // If Stream API strictly rejects full objects, we stringify it.
-        // For react-stream-chat it generally accepts any dictionary.
+
+        // Fetch user-specific Stream token
+        let fetchedToken = userToken; // Fallback
+        try {
+          const tokenRes = await axios.get("/api/auth/stream-token");
+          fetchedToken = tokenRes.data.token;
+          mappedUser.id = tokenRes.data.userId; // Securely bound ID
+        } catch (tokenErr) {
+          console.warn("Failed to fetch dynamic Stream token. Verify STREAM_API_SECRET in backend .env.", tokenErr);
+          // Fallback to static token structure to prevent immediate app crash
+          mappedUser.id = "throbbing-sky-5";
+        }
+
         setStreamUser(mappedUser);
+        setDynamicToken(fetchedToken);
       } catch (err) {
         console.error("Failed to fetch user for chat:", err);
       }
     };
-    fetchUser();
+    fetchUserAndToken();
   }, [isGuest]);
 
   const client = useCreateChatClient({
     apiKey,
-    tokenOrProvider: userToken,
+    tokenOrProvider: dynamicToken,
     userData: streamUser,
   });
 
   useEffect(() => {
-    if (!client || !streamUser) return;
+    if (!client || !streamUser || !dynamicToken) return;
 
     // Stream Channel IDs cannot contain certain characters like ":"
     const sanitizedId = activeRoom.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -138,7 +149,7 @@ const ChatUI = () => {
     });
 
     setChannel(newChannel);
-  }, [client, activeRoom, streamUser]);
+  }, [client, activeRoom, streamUser, dynamicToken]);
 
   if (!client || !channel || !streamUser) {
     return (

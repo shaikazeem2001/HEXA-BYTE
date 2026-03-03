@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require("../config/supabase");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { StreamChat } = require("stream-chat");
 
 // signup routes
 router.post("/signup", async (req, res) => {
@@ -264,6 +265,29 @@ router.post("/login", async (req, res) => {
       message: "Server error", 
       error: error.message
     });
+  }
+});
+
+// Stream Token generator for authenticated users
+router.get("/stream-token", authMiddleware, async (req, res) => {
+  try {
+    if (!process.env.STREAM_API_KEY || !process.env.STREAM_API_SECRET) {
+      console.error("Stream API credentials missing from backend .env");
+      return res.status(500).json({ message: "Stream API credentials not configured" });
+    }
+    
+    const serverClient = StreamChat.getInstance(
+      process.env.STREAM_API_KEY, 
+      process.env.STREAM_API_SECRET
+    );
+
+    // Create a token that never expires
+    const token = serverClient.createToken(req.user.id);
+    
+    res.json({ token, userId: req.user.id });
+  } catch (err) {
+    console.error("Generate Stream Token Error:", err);
+    res.status(500).json({ message: "Failed to generate stream token" });
   }
 });
 
