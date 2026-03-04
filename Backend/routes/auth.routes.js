@@ -291,4 +291,32 @@ router.get("/stream-token", authMiddleware, async (req, res) => {
   }
 });
 
+// Stream Token generator for guests
+router.post("/guest-stream-token", async (req, res) => {
+  try {
+    const { guestId } = req.body;
+    
+    if (!guestId || !guestId.startsWith("guest_")) {
+      return res.status(400).json({ message: "Invalid guest ID format." });
+    }
+
+    if (!process.env.STREAM_API_KEY || !process.env.STREAM_API_SECRET) {
+      console.error("Stream API credentials missing from backend .env");
+      return res.status(500).json({ message: "Stream API credentials not configured" });
+    }
+    
+    const serverClient = StreamChat.getInstance(
+      process.env.STREAM_API_KEY, 
+      process.env.STREAM_API_SECRET
+    );
+
+    const token = serverClient.createToken(guestId);
+    
+    res.json({ token, userId: guestId });
+  } catch (err) {
+    console.error("Generate Guest Stream Token Error:", err);
+    res.status(500).json({ message: "Failed to generate guest stream token" });
+  }
+});
+
 module.exports = router;

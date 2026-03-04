@@ -63,7 +63,7 @@ const CustomAvatar = ({ user, name }) => {
 const ChatUI = () => {
   const { id: communityId, roomId } = useParams();
   const navigate = useNavigate();
-  const [channel, setChannel] = useState(null);
+  const [channel, setChannel] = useState(undefined);
   const isGuest = localStorage.getItem("isGuest") === "true";
   const [appTheme, setAppTheme] = useState(() => document.documentElement.classList.contains("dark") ? "str-chat__theme-dark" : "str-chat__theme-light");
 
@@ -80,8 +80,9 @@ const ChatUI = () => {
     return () => observer.disconnect();
   }, []);
 
-  const [streamUser, setStreamUser] = useState(null);
-  const [dynamicToken, setDynamicToken] = useState(null);
+  // Initialize as undefined rather than null to satisfy Stream React hook type checking
+  const [streamUser, setStreamUser] = useState(undefined);
+  const [dynamicToken, setDynamicToken] = useState(undefined);
 
   const activeRoom = communityId || roomId || "general";
   const isPrivate = !!roomId;
@@ -89,13 +90,23 @@ const ChatUI = () => {
   // Sync our local user with Stream
   useEffect(() => {
     if (isGuest) {
-      setStreamUser({
-        id: localStorage.getItem("userId") || 'guest_user',
-        name: localStorage.getItem("username") || 'Guest',
-      });
-      // Guests don't have backend profiles, so we fallback to dev token/static token
-      // depending on Stream app settings. If auth is enabled, they need a token.
-      setDynamicToken(userToken);
+      const initGuest = async () => {
+        const guestId = localStorage.getItem("userId") || 'guest_user';
+        try {
+          // If Guest, we still need a valid stream token generated via backend secret
+          const tokenRes = await axios.post("/api/auth/guest-stream-token", { guestId });
+          setStreamUser({
+            id: tokenRes.data.userId,
+            name: localStorage.getItem("username") || 'Guest',
+          });
+          setDynamicToken(tokenRes.data.token);
+        } catch (err) {
+          console.warn("Generating Guest Token Failed. Falling back to static.", err);
+          setStreamUser({ id: guestId, name: localStorage.getItem("username") || 'Guest' });
+          setDynamicToken(userToken);
+        }
+      };
+      initGuest();
       return;
     }
 
@@ -110,16 +121,14 @@ const ChatUI = () => {
           avatarConfig: u.avatarConfig || undefined,
         };
 
-        // Fetch user-specific Stream token
         let fetchedToken = userToken; // Fallback
         try {
           const tokenRes = await axios.get("/api/auth/stream-token");
           fetchedToken = tokenRes.data.token;
-          mappedUser.id = tokenRes.data.userId; // Securely bound ID
+          mappedUser.id = tokenRes.data.userId;
         } catch (tokenErr) {
-          console.warn("Failed to fetch dynamic Stream token. Verify STREAM_API_SECRET in backend .env.", tokenErr);
-          // Fallback to static token structure to prevent immediate app crash
-          mappedUser.id = "throbbing-sky-5";
+          console.warn("Failed to fetch dynamic Stream token for authed user. Falling back to static Dev token.", tokenErr);
+          mappedUser.id = "throbbing-sky-5"; // Must perfectly match VITE_STREAM_USER_TOKEN mapping
         }
 
         setStreamUser(mappedUser);
@@ -131,17 +140,39 @@ const ChatUI = () => {
     fetchUserAndToken();
   }, [isGuest]);
 
-  // Provide fallback structure or prevent initialization until user loads
+  if (!streamUser || !dynamicToken) {
+    return (
+      <div className="flex flex-col h-[80vh] bg-gray-50/50 dark:bg-gray-950/50 rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl items-center justify-center text-gray-900 dark:text-white w-full max-w-6xl mx-auto animate-pulse transition-colors duration-300">
+        <div className="w-12 h-12 border-4 border-iris-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-gray-500 dark:text-gray-400 font-medium transition-colors">Authenticating chat session...</p>
+      </div>
+    );
+  }
+
+  return (
+    <ChatUIContent
+      streamUser={streamUser}
+      dynamicToken={dynamicToken}
+      activeRoom={activeRoom}
+      isPrivate={isPrivate}
+      appTheme={appTheme}
+      navigate={navigate}
+      isGuest={isGuest}
+    />
+  );
+};
+
+const ChatUIContent = ({ streamUser, dynamicToken, activeRoom, isPrivate, appTheme, navigate, isGuest }) => {
+  const [channel, setChannel] = useState(undefined);
+
   const client = useCreateChatClient({
     apiKey,
     tokenOrProvider: dynamicToken,
-    // Stream requires userData.id to immediately be available or it crashes
-    userData: streamUser || { id: "loading" },
+    userData: streamUser,
   });
 
   useEffect(() => {
-    // Do not initialize channel if we are still fetching real credentials
-    if (!client || !streamUser || streamUser.id === "loading" || !dynamicToken) return;
+    if (!client) return;
 
     // Stream Channel IDs cannot contain certain characters like ":"
     const sanitizedId = activeRoom.replace(/[^a-zA-Z0-9_\-]/g, '_');
@@ -152,10 +183,10 @@ const ChatUI = () => {
     });
 
     setChannel(newChannel);
-  }, [client, activeRoom, streamUser, dynamicToken]);
+  }, [client, activeRoom, streamUser]);
 
-  // Loading state guard
-  if (!client || !channel || !streamUser || streamUser.id === "loading" || !dynamicToken) {
+  // Loading state guard (ensuring channel instantiation has occurred)
+  if (!client || !channel) {
     return (
       <div className="flex flex-col h-[80vh] bg-gray-50/50 dark:bg-gray-950/50 rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl items-center justify-center text-gray-900 dark:text-white w-full max-w-6xl mx-auto animate-pulse transition-colors duration-300">
         <div className="w-12 h-12 border-4 border-iris-500 border-t-transparent rounded-full animate-spin mb-4"></div>
