@@ -6,7 +6,7 @@ const Layout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-black dark:text-white relative transition-colors duration-300">
+        <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-[#0C0A15] dark:text-gray-100 relative transition-colors duration-300 overflow-hidden">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -20,7 +20,7 @@ const Layout = ({ children }) => {
 
             <main className="flex-1 md:ml-64 w-full h-screen flex flex-col min-w-0">
                 {/* Mobile Header Bar */}
-                <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-black/50 backdrop-blur-md sticky top-0 z-30 transition-colors duration-300">
+                <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-[#0C0A15]/80 backdrop-blur-md sticky top-0 z-30 transition-colors duration-300">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-400 transition-colors"

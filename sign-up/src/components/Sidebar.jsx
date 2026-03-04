@@ -12,7 +12,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   ];
 
   return (
-    <aside className={`w-64 h-screen bg-white dark:bg-black text-gray-600 dark:text-gray-300 flex flex-col fixed left-0 top-0 border-r border-gray-200 dark:border-gray-800 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+    <aside className={`w-64 h-screen bg-white dark:bg-[#0C0A15] text-gray-600 dark:text-gray-300 flex flex-col fixed left-0 top-0 border-r border-gray-200 dark:border-gray-800/80 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
       <div className="p-6 flex items-center justify-between">
         <h1 onClick={() => { navigate('/profile'); setIsOpen(false); }} className="text-2xl font-bold text-gray-900 dark:text-white cursor-pointer flex items-center gap-2 transition-colors">
@@ -33,7 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             to={item.path}
             onClick={() => setIsOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? 'bg-iris-50 dark:bg-iris-600/10 text-iris-600 dark:text-iris-500 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-gray-900 border border-transparent hover:border-gray-200 dark:hover:border-gray-800'
+              `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'hover:bg-gray-50 dark:hover:bg-slate-800/50 border border-transparent hover:border-gray-200 dark:hover:border-slate-700/50'
               }`
             }
           >
@@ -49,11 +49,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         ))}
       </nav>
 
-      <div className="p-4 space-y-4 border-t border-gray-200 dark:border-gray-900 bg-white/50 dark:bg-black/50 backdrop-blur-sm transition-colors">
+      <div className="p-4 space-y-4 border-t border-gray-200 dark:border-gray-800/50 bg-white/50 dark:bg-[#0C0A15]/80 backdrop-blur-sm transition-colors">
         <NavLink
           to="/join"
           onClick={() => setIsOpen(false)}
-          className="flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-black font-bold py-4 px-4 rounded-2xl transition-all shadow-lg active:scale-95"
+          className="flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white hover:bg-black dark:hover:bg-gray-200 text-white dark:text-[#0C0A15] font-bold py-4 px-4 rounded-2xl transition-all shadow-lg active:scale-95"
         >
           <Plus size={20} />
           Join Community
