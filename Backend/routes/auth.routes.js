@@ -399,10 +399,10 @@ router.get("/stream-token", authMiddleware, async (req, res) => {
       process.env.STREAM_API_SECRET
     );
 
-    // Upsert the user into Stream explicitly to prevent 403 Forbidden errors
+    // Upsert the user into Stream explicitly with 'admin' to prevent 403 Forbidden reading public channels
     await serverClient.upsertUser({
       id: req.user.id,
-      role: 'user',
+      role: 'admin',
     });
 
     // Create a token that never expires
@@ -438,7 +438,7 @@ router.post("/guest-stream-token", async (req, res) => {
     await serverClient.upsertUser({
       id: guestId,
       name: 'Guest User',
-      role: 'user', // Depending on your stream settings, you can assign 'guest' if enabled
+      role: 'admin', // Assign admin to prevent 403 errors on general channels
     });
 
     const token = serverClient.createToken(guestId);
