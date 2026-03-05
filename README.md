@@ -446,8 +446,6 @@ API_VERSION=v1
 # Local MongoDB
 MONGODB_URI=mongodb://localhost:27017/vibechat
 
-# OR MongoDB Atlas (Production)
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/vibechat?retryWrites=true&w=majority
 
 # ====================================
 # JWT AUTHENTICATION
