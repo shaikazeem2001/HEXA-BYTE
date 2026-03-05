@@ -229,7 +229,27 @@ const ChatUIContent = ({ streamUser, dynamicToken, activeRoom, isPrivate, appThe
         <Chat client={client} theme={appTheme}>
           <Channel channel={channel} Avatar={CustomAvatar}>
             <Window>
-              <MessageList />
+              <MessageList
+                customMessageActions={
+                  isGuest ? {} // Guests can't block/flag
+                    : {
+                      Block: (message) => {
+                        if (window.confirm("Are you sure you want to block this user? They will no longer be able to message you directly.")) {
+                          client.blockUser(message.user.id)
+                            .then(() => alert("User blocked successfully."))
+                            .catch(() => alert("Failed to block user."));
+                        }
+                      },
+                      Report: (message) => {
+                        if (window.confirm("Flag this message/user for moderation review?")) {
+                          client.flagMessage(message.id)
+                            .then(() => alert("Message reported. Our moderation team will review it."))
+                            .catch(() => alert("Failed to flag message."));
+                        }
+                      }
+                    }
+                }
+              />
               {isGuest ? (
                 <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-200/50 dark:border-gray-800/50 flex flex-col items-center transition-colors">
                   <p className="text-gray-500 dark:text-gray-400 text-sm mb-3 transition-colors">Guests cannot type in this channel.</p>

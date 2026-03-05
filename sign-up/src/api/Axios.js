@@ -2,15 +2,11 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "https://vibe-chat-production-e694.up.railway.app",
+  withCredentials: true,
 });
 
 instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+  // Authentication passes entirely over Secure HttpOnly Cookies via `withCredentials: true`
   return config;
 });
 

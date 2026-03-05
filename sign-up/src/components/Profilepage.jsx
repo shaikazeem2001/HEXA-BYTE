@@ -18,10 +18,7 @@ const Profilepage = () => {
     // Fetch real trending communities
     const fetchTrending = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("/api/rooms", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axios.get("/api/rooms");
 
         // Take top 3 rooms and map with appropriate static branding icons for now
         const items = res.data.slice(0, 3).map((room, index) => {
@@ -55,10 +52,7 @@ const Profilepage = () => {
     if (!newCommunity.name.trim()) return alert("Please enter a community name");
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post(`/api/rooms`, newCommunity, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.post(`/api/rooms`, newCommunity);
 
       // Update local joined communities
       const updated = [res.data, ...joinedCommunities];
@@ -78,7 +72,12 @@ const Profilepage = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+    } catch (e) {
+      console.warn("Logout error:", e);
+    }
     localStorage.clear();
     navigate('/');
   };

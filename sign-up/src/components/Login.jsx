@@ -17,7 +17,6 @@ const Login = () => {
         `/api/auth/login`,
         { email, password }
       );
-      localStorage.setItem("token", res.data.token);
       localStorage.setItem('userId', res.data.user.id);
       localStorage.setItem('username', res.data.user.username);
       localStorage.removeItem('isGuest');

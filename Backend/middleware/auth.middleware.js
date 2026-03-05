@@ -1,14 +1,20 @@
 const jwt = require("jsonwebtoken");
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log(req.headers);
+  // First, check cookies for the token (Primary robust method)
+  let token = req.cookies?.token;
 
-  if (!authHeader) {
-    return res.status(401).json({ message: "No token, access denied" });
+  // Fallback to Authorization header if not in cookies (for backward compatibility if needed)
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(" ")[1];
+    }
   }
 
-  const token = authHeader.split(" ")[1]; // removes Bearer
+  if (!token) {
+    return res.status(401).json({ message: "No token, access denied" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

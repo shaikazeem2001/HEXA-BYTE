@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const http = require("http");
 const path = require("path");
@@ -12,8 +13,12 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ["https://vibe-chat-production-e694.up.railway.app", "https://vibe-chat-7if86p2vc-shaikazeem2001s-projects.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // Serve static files from the React app build
 app.use(express.static(path.join(__dirname, "../sign-up/dist")));

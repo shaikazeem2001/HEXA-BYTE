@@ -25,10 +25,7 @@ const PrivateRooms = () => {
         if (!roomCode.trim()) return;
         setIsLoading(true);
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.post(`/api/rooms/join/invite`, { inviteCode: roomCode }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await axios.post(`/api/rooms/join/invite`, { inviteCode: roomCode });
 
             // Add to joined communities in localStorage
             const joined = JSON.parse(localStorage.getItem("joinedCommunities") || "[]");
@@ -53,10 +50,7 @@ const PrivateRooms = () => {
         if (!newCommunity.name.trim()) return alert("Please enter a community name");
         setIsLoading(true);
         try {
-            const token = localStorage.getItem("token");
-            const res = await axios.post(`/api/rooms`, newCommunity, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await axios.post(`/api/rooms`, newCommunity);
 
             // Update local joined communities
             const joined = JSON.parse(localStorage.getItem("joinedCommunities") || "[]");

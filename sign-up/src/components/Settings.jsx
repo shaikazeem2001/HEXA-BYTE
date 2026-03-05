@@ -115,10 +115,40 @@ const Settings = () => {
         setTimeout(() => setMessage({ text: "", type: "" }), 3000);
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await axios.post('/api/auth/logout');
+        } catch (e) {
+            console.warn("Logout error:", e);
+        }
         localStorage.clear();
         document.documentElement.classList.add("dark"); // Default back to dark for logins
         navigate("/");
+    };
+
+    const handleDeleteAccount = async () => {
+        if (isGuest) {
+            showMessage("Guests cannot delete their temporary accounts here.", "error");
+            return;
+        }
+
+        const confirmDelete = window.confirm(
+            "Are you absolutely sure you want to delete your account? This will permanently erase your profile, messages, and communities you own. This action CANNOT be undone."
+        );
+
+        if (!confirmDelete) return;
+
+        setIsLoading(true);
+        try {
+            await axios.delete("/api/auth/profile");
+            localStorage.clear();
+            document.documentElement.classList.add("dark");
+            navigate("/");
+            alert("Your account has been permanently deleted.");
+        } catch (err) {
+            showMessage(err.response?.data?.message || "Failed to delete account.", "error");
+            setIsLoading(false);
+        }
     };
 
     const randomizeAvatar = () => {
@@ -438,6 +468,25 @@ const Settings = () => {
                                         <option value="friends">Friends Only</option>
                                         <option value="private">Nobody</option>
                                     </select>
+                                </div>
+                                {/* Danger Zone: Account Deletion */}
+                                <div className="mt-8 pt-6 border-t border-red-500/20">
+                                    <h3 className="font-black text-red-500 mb-2 uppercase tracking-widest text-sm">Danger Zone</h3>
+                                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-red-500/5 border border-red-500/20 rounded-2xl transition-colors gap-4">
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 dark:text-white">Delete Account</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+                                                Permanently erase your profile, messages, and communities. This cannot be undone.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleDeleteAccount}
+                                            disabled={isLoading || isGuest}
+                                            className="whitespace-nowrap bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50"
+                                        >
+                                            Delete Account
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

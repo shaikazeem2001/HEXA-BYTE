@@ -202,6 +202,47 @@ router.put("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+// Delete Profile Route (Account Deletion)
+router.delete("/profile", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // First delete from Supabase Auth & Users table 
+    const { error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (dbError) throw dbError;
+
+    // Delete user from Stream to prevent ghost data
+    try {
+      if (process.env.STREAM_API_KEY && process.env.STREAM_API_SECRET) {
+        const serverClient = StreamChat.getInstance(
+          process.env.STREAM_API_KEY,
+          process.env.STREAM_API_SECRET
+        );
+        await serverClient.deleteUser(userId, { mark_messages_deleted: true });
+      }
+    } catch (streamError) {
+      console.error("Failed to delete user from Stream:", streamError);
+      // We don't throw here to ensure local deletion succeeds even if Stream errors
+    }
+
+    // Erase the cookie from the client
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    console.error("Account Deletion Error:", err);
+    res.status(500).json({ message: "Server error deleting account", error: err.message });
+  }
+});
+
 // login routes
 router.post("/login", async (req, res) => {
   if (!process.env.JWT_SECRET) {
@@ -234,6 +275,14 @@ router.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    // Set token as an HttpOnly, Secure cookie
+    res.cookie('token', token, {
+       httpOnly: true,
+       secure: process.env.NODE_ENV === 'production',
+       sameSite: 'none', // Required for cross-origin requests
+       maxAge: 24 * 60 * 60 * 1000 // 1 day limit
+    });
+
       let avatarConfig = null;
       let settingsConfig = null;
       try {
@@ -250,6 +299,7 @@ router.post("/login", async (req, res) => {
 
       return res.json({
         message: "Login successful",
+        // Token still attached temporarily for backward compatibility while UI updates
         token,
         user: {
           id: user.id,
@@ -266,6 +316,16 @@ router.post("/login", async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Logout explicitly clear HTTP-only cookies
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+  });
+  res.json({ message: "Logged out successfully" });
 });
 
 // Stream Token generator for authenticated users
