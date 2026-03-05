@@ -19,7 +19,7 @@ import axios from "../api/Axios";
 const apiKey = import.meta.env.VITE_STREAM_API_KEY;
 const userToken = import.meta.env.VITE_STREAM_USER_TOKEN;
 
-// Custom Avatar Component to inject Memojis into native Stream messages
+// Custom Avatar Component to handle Hybrid Avatar types (Supabase Images OR Memojis) injected into Stream messages
 const CustomAvatar = ({ user, name }) => {
   const [senderAvatar, setSenderAvatar] = useState(null);
 
@@ -27,14 +27,12 @@ const CustomAvatar = ({ user, name }) => {
     const config = user?.avatarConfig || user?.custom?.avatarConfig;
     if (config) {
       setSenderAvatar(config);
-    } else if (user?.id) {
+    } else if (user?.id && user.id !== "guest_user") {
       const fetchAvatar = async () => {
         try {
-          if (user.id !== "guest_user") {
-            const res = await axios.get(`/api/auth/user/${user.id}`);
-            if (res.data?.avatarConfig) {
-              setSenderAvatar(res.data.avatarConfig);
-            }
+          const res = await axios.get(`/api/auth/user/${user.id}`);
+          if (res.data?.avatarConfig) {
+            setSenderAvatar(res.data.avatarConfig);
           }
         } catch (e) {
           console.log("Fallback avatar fetch failed:", e.message);
@@ -45,11 +43,19 @@ const CustomAvatar = ({ user, name }) => {
   }, [user]);
 
   if (senderAvatar) {
-    return (
-      <div className="w-10 h-10 rounded-full shadow-lg shadow-iris-500/20 bg-gray-800 shrink-0 mx-1">
-        <Avatar className="w-full h-full" {...senderAvatar} />
-      </div>
-    );
+    if (senderAvatar.isCustomImage && senderAvatar.url) {
+      return (
+        <div className="w-10 h-10 rounded-full shadow-lg border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800 shrink-0 mx-1 overflow-hidden object-cover flex items-center justify-center">
+          <img src={senderAvatar.url} alt="User Avatar" className="w-full h-full object-cover" />
+        </div>
+      );
+    } else {
+      return (
+        <div className="w-10 h-10 rounded-full shadow-lg bg-gray-800 shrink-0 mx-1 relative overflow-hidden">
+          <Avatar className="w-full h-full" {...senderAvatar} />
+        </div>
+      );
+    }
   }
 
   return (

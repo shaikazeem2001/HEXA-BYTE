@@ -4,6 +4,13 @@ const supabase = require("../config/supabase");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { StreamChat } = require("stream-chat");
+const multer = require("multer");
+
+// Configure Multer for processing file upload buffers locally
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+});
 
 // signup routes
 router.post("/signup", async (req, res) => {
@@ -199,6 +206,57 @@ router.put("/profile", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Profile Update Error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// Upload Avatar Image to Supabase Storage
+router.post("/profile/avatar", authMiddleware, upload.single("avatarData"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    const fileExt = req.file.originalname.split('.').pop();
+    const fileName = `${req.user.id}-${Date.now()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    // Upload to Supabase Storage Bucket
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get the Public URL of the uploaded image
+    const { data: publicData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicData.publicUrl;
+
+    // Update the User's Database Record
+    // We map this specifically back into `avatarConfig: { url }` to prevent structural breaking changes for ChatUI
+    const newAvatarConfig = { url: publicUrl, isCustomImage: true };
+
+    const { error: dbUpdateError } = await supabase
+      .from("users")
+      .update({ avatar: JSON.stringify({ avatarConfig: newAvatarConfig }) })
+      .eq("id", req.user.id);
+
+    if (dbUpdateError) throw dbUpdateError;
+
+    return res.json({
+      message: "Avatar uploaded successfully",
+      url: publicUrl,
+      avatarConfig: newAvatarConfig
+    });
+
+  } catch (error) {
+    console.error("Avatar Upload Error:", error);
+    return res.status(500).json({ message: "Failed to upload avatar", error: error.message });
   }
 });
 

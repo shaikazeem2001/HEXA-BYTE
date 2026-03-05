@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Mail, Lock, Settings as SettingsIcon, Save, LogOut, CheckCircle2, Loader2, Moon, Sun, Bell, Shield, Palette } from "lucide-react";
+import { User, Mail, Lock, Settings as SettingsIcon, Save, LogOut, CheckCircle2, Loader2, Moon, Sun, Bell, Shield, Palette, RefreshCw } from "lucide-react";
 import axios from "../api/Axios";
 import { useNavigate } from "react-router-dom";
 import Avatar, { genConfig } from "react-nice-avatar";
@@ -21,8 +21,10 @@ const Settings = () => {
     const [newPassword, setNewPassword] = useState("");
 
     // Avatar Settings State
-    const defaultAvatarConfig = genConfig();
-    const [avatarConfig, setAvatarConfig] = useState(defaultAvatarConfig);
+    const [avatarTab, setAvatarTab] = useState("upload");
+    const [avatarConfig, setAvatarConfig] = useState(genConfig());
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
 
     // Settings State
     const [theme, setTheme] = useState("dark");
@@ -41,6 +43,11 @@ const Settings = () => {
                     setEmail(res.data.user.email);
                     if (res.data.user.avatarConfig) {
                         setAvatarConfig(res.data.user.avatarConfig);
+                        if (res.data.user.avatarConfig.isCustomImage) {
+                            setAvatarTab("upload");
+                        } else {
+                            setAvatarTab("memoji");
+                        }
                     }
                     if (res.data.user.settings) {
                         const userTheme = res.data.user.settings.theme || "dark";
@@ -92,21 +99,58 @@ const Settings = () => {
         }
         setIsLoading(true);
         try {
-            await axios.put("/api/auth/profile", {
-                avatarConfig,
-                settings: { theme, notifications, privacy }
-            });
+            if (avatarTab === "upload" && avatarFile) {
+                const formData = new FormData();
+                formData.append('avatarData', avatarFile);
+
+                const uploadRes = await axios.post("/api/auth/profile/avatar", formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                if (uploadRes.data.avatarConfig) {
+                    setAvatarConfig(uploadRes.data.avatarConfig);
+                }
+
+                await axios.put("/api/auth/profile", {
+                    settings: { theme, notifications, privacy }
+                });
+            } else if (avatarTab === "memoji") {
+                const memojiConfig = { ...avatarConfig, isCustomImage: false };
+                await axios.put("/api/auth/profile", {
+                    avatarConfig: memojiConfig,
+                    settings: { theme, notifications, privacy }
+                });
+                setAvatarConfig(memojiConfig);
+            } else {
+                await axios.put("/api/auth/profile", {
+                    settings: { theme, notifications, privacy }
+                });
+            }
+
             localStorage.setItem("theme", theme);
             if (theme === "dark") {
                 document.documentElement.classList.add("dark");
             } else {
                 document.documentElement.classList.remove("dark");
             }
-            showMessage("Settings saved successfully!", "success");
+            showMessage("Settings & Avatar saved successfully!", "success");
+            setAvatarFile(null); // Clear pending file state
         } catch (err) {
             showMessage(err.response?.data?.message || "Failed to save settings", "error");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                showMessage("File is too large. Max size is 5MB.", "error");
+                return;
+            }
+            setAvatarFile(file);
+            setAvatarPreview(URL.createObjectURL(file));
         }
     };
 
@@ -316,91 +360,149 @@ const Settings = () => {
                     {/* AVATAR SECTION */}
                     {activeTab === "avatar" && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 transition-colors">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Customize Memoji</h2>
-                                <button onClick={randomizeAvatar} className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white px-3 py-1.5 rounded-lg transition-colors font-bold uppercase tracking-wider">
-                                    Randomize
+                            <div className="border-b border-gray-200 dark:border-gray-800 pb-4 transition-colors">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Avatar Configuration</h2>
+                                <p className="text-sm text-gray-500 mt-1">Choose between uploading a custom image or generating a Memoji.</p>
+                            </div>
+
+                            {/* Sub-tab Toggle */}
+                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
+                                <button
+                                    onClick={() => setAvatarTab("upload")}
+                                    className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${avatarTab === "upload" ? "bg-white dark:bg-black text-iris-600 dark:text-iris-500 shadow-sm shadow-black/5" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                                >
+                                    Upload Image
+                                </button>
+                                <button
+                                    onClick={() => setAvatarTab("memoji")}
+                                    className={`px-6 py-2 rounded-lg font-bold text-sm transition-all ${avatarTab === "memoji" ? "bg-white dark:bg-black text-iris-600 dark:text-iris-500 shadow-sm shadow-black/5" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                                >
+                                    Generate Memoji
                                 </button>
                             </div>
 
-                            <div className="flex flex-col md:flex-row gap-8 items-start">
-                                {/* Live Preview */}
-                                <div className="flex flex-col items-center gap-4 bg-gray-50/50 dark:bg-black/50 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 shrink-0 w-full md:w-auto transition-colors">
-                                    <div className="w-40 h-40 rounded-full shadow-2xl shadow-iris-500/20 bg-gray-800">
-                                        <Avatar className="w-full h-full" {...avatarConfig} />
-                                    </div>
-                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Live Preview</span>
-                                </div>
-
-                                {/* Controls */}
-                                <div className="flex-1 w-full space-y-6">
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Skin Tone</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {skinColors.map(color => (
-                                                <button
-                                                    key={color}
-                                                    onClick={() => setAvatarConfig({ ...avatarConfig, faceColor: color })}
-                                                    className={`w-8 h-8 rounded-full border-2 transition-all ${avatarConfig.faceColor === color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'}`}
-                                                    style={{ backgroundColor: color }}
-                                                />
-                                            ))}
+                            {avatarTab === "upload" ? (
+                                <div className="flex flex-col md:flex-row gap-8 items-start animate-in fade-in slide-in-from-right-4 duration-300">
+                                    {/* Live Preview */}
+                                    <div className="flex flex-col items-center gap-4 bg-gray-50/50 dark:bg-black/50 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 shrink-0 w-full md:w-auto transition-colors">
+                                        <div className="w-40 h-40 rounded-full shadow-2xl shadow-iris-500/20 bg-gray-800 overflow-hidden border-4 border-white dark:border-gray-900 flex items-center justify-center">
+                                            {avatarPreview ? (
+                                                <img src={avatarPreview} alt="Pending Avatar Upload" className="w-full h-full object-cover" />
+                                            ) : (avatarConfig?.url && avatarConfig.isCustomImage) ? (
+                                                <img src={avatarConfig.url} alt="Current Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User size={64} className="text-gray-500" />
+                                            )}
                                         </div>
+                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{avatarPreview ? "New Avatar Preview" : "Current Avatar"}</span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Hair Style</label>
-                                            <select
-                                                className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
-                                                value={avatarConfig.hairStyle}
-                                                onChange={(e) => setAvatarConfig({ ...avatarConfig, hairStyle: e.target.value })}
-                                            >
-                                                {hairStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Face Shape</label>
-                                            <select
-                                                className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
-                                                value={avatarConfig.shape} // Fixed from faceColor
-                                                onChange={(e) => setAvatarConfig({ ...avatarConfig, shape: e.target.value })}
-                                            >
-                                                {faceShapes.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Eyes</label>
-                                            <select
-                                                className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
-                                                value={avatarConfig.eyeStyle}
-                                                onChange={(e) => setAvatarConfig({ ...avatarConfig, eyeStyle: e.target.value })}
-                                            >
-                                                {eyeStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Expression (Mouth)</label>
-                                            <select
-                                                className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
-                                                value={avatarConfig.mouthStyle}
-                                                onChange={(e) => setAvatarConfig({ ...avatarConfig, mouthStyle: e.target.value })}
-                                            >
-                                                {mouthStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
-                                            </select>
+                                    {/* Controls */}
+                                    <div className="flex-1 w-full space-y-6">
+                                        <div className="relative border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-iris-500 dark:hover:border-iris-400 bg-gray-50 dark:bg-gray-900/50 rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors group">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            />
+                                            <div className="w-16 h-16 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-full flex items-center justify-center text-gray-400 group-hover:text-iris-500 group-hover:scale-110 shadow-lg mb-4 transition-all">
+                                                <Palette size={28} />
+                                            </div>
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white mb-1 group-hover:text-iris-500 transition-colors">Click or drag image to upload</p>
+                                            <p className="text-xs text-gray-500">Supports JPG, PNG, WEBP</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex flex-col md:flex-row gap-8 items-start animate-in fade-in slide-in-from-left-4 duration-300">
+                                    {/* Memoji Live Preview */}
+                                    <div className="flex flex-col items-center gap-4 bg-gray-50/50 dark:bg-black/50 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 shrink-0 w-full md:w-auto transition-colors">
+                                        <div className="w-40 h-40 rounded-full shadow-2xl shadow-iris-500/20 bg-gray-800 relative group overflow-hidden">
+                                            <Avatar className="w-full h-full active:scale-95 transition-transform" {...avatarConfig} />
+                                            <button onClick={randomizeAvatar} className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-sm font-bold tracking-wider">RANDOMIZE</span>
+                                            </button>
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Live Preview</span>
+                                    </div>
+
+                                    {/* Memoji Controls */}
+                                    <div className="flex-1 w-full space-y-6">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Skin Tone</label>
+                                                <button onClick={randomizeAvatar} className="text-xs font-bold text-iris-600 dark:text-iris-400 hover:text-iris-500 transition-colors flex items-center gap-1 uppercase tracking-widest">
+                                                    <RefreshCw size={14} />
+                                                    Randomize
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {skinColors.map(color => (
+                                                    <button
+                                                        key={color}
+                                                        onClick={() => setAvatarConfig({ ...avatarConfig, faceColor: color, isCustomImage: false })}
+                                                        className={`w-8 h-8 rounded-full border-2 transition-all ${avatarConfig.faceColor === color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'}`}
+                                                        style={{ backgroundColor: color }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Hair Style</label>
+                                                <select
+                                                    className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
+                                                    value={avatarConfig.hairStyle}
+                                                    onChange={(e) => setAvatarConfig({ ...avatarConfig, hairStyle: e.target.value, isCustomImage: false })}
+                                                >
+                                                    {hairStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Face Shape</label>
+                                                <select
+                                                    className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
+                                                    value={avatarConfig.shape}
+                                                    onChange={(e) => setAvatarConfig({ ...avatarConfig, shape: e.target.value, isCustomImage: false })}
+                                                >
+                                                    {faceShapes.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Eyes</label>
+                                                <select
+                                                    className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
+                                                    value={avatarConfig.eyeStyle}
+                                                    onChange={(e) => setAvatarConfig({ ...avatarConfig, eyeStyle: e.target.value, isCustomImage: false })}
+                                                >
+                                                    {eyeStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Expression (Mouth)</label>
+                                                <select
+                                                    className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl outline-none focus:border-iris-500 font-medium appearance-none transition-colors"
+                                                    value={avatarConfig.mouthStyle}
+                                                    onChange={(e) => setAvatarConfig({ ...avatarConfig, mouthStyle: e.target.value, isCustomImage: false })}
+                                                >
+                                                    {mouthStyles.map(style => <option key={style.value} value={style.value}>{style.label}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="pt-4 flex justify-end gap-4 border-t border-gray-200 dark:border-gray-800 transition-colors">
                                 <button
                                     onClick={handleSaveAvatarAndSettings}
-                                    disabled={isLoading || isGuest}
+                                    disabled={isLoading || isGuest || (avatarTab === "upload" && !avatarFile && !avatarConfig?.isCustomImage)}
                                     className="bg-iris-600 hover:bg-iris-500 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg flex items-center gap-2 group disabled:opacity-50"
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                                    Apply Memoji
+                                    Apply Changes
                                 </button>
                             </div>
                         </div>
