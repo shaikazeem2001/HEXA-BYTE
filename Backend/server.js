@@ -12,9 +12,17 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  "https://vibe-chat-production-e694.up.railway.app", 
+  "http://localhost:5173", 
+  "http://localhost:5174", 
+  "http://localhost:3000",
+  /^https:\/\/vibe-chat.*\.vercel\.app$/
+];
+
 // Middleware
 app.use(cors({
-  origin: ["https://vibe-chat-production-e694.up.railway.app", "https://vibe-chat-7if86p2vc-shaikazeem2001s-projects.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
@@ -44,7 +52,7 @@ const server = http.createServer(app);
 // Attach Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: ["https://vibe-chat-production-e694.up.railway.app", "https://vibe-chat-7if86p2vc-shaikazeem2001s-projects.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
