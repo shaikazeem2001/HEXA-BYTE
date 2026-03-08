@@ -80,10 +80,10 @@ graph TD
     Socket[Backend: Socket.io Real-time Server]
     DB[(Database: Supabase)]
 
-    Client <-->|REST API Requests / JWT Auth| API
-    Client <-->|WebSockets (Real-time Events)| Socket
-    API <-->|Reads/Writes Data| DB
-    Socket <-->|Fetches/Saves Chat Data| DB
+    Client <-->|"REST API Requests / JWT Auth"| API
+    Client <-->|"WebSockets (Real-time Events)"| Socket
+    API <-->|"Reads/Writes Data"| DB
+    Socket <-->|"Fetches/Saves Chat Data"| DB
 ```
 
 The system follows a client-server architecture:
@@ -233,10 +233,23 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ## 📸 Screenshots / Demo
 
-*Add screenshots here of:*
-- *Login Page*
-- *Dashboard/Room List*
-- *Active Chat Interface*
+### 🔐 Authentication Pages
+<div style="display: flex; justify-content: space-between;">
+  <img src="./sign-up/src/assets/login-page.png" alt="Login Page" width="48%" />
+  <img src="./sign-up/src/assets/login-premium.png" alt="Premium Login" width="48%" />
+</div>
+
+### 🏠 Home Dashboard
+<img src="./sign-up/src/assets/home-page.png" alt="Home Dashboard" width="100%" />
+
+### 🌍 Explore Communities
+<img src="./sign-up/src/assets/popular-page.png" alt="Explore Communities" width="100%" />
+
+### 🔒 Private Rooms
+<img src="./sign-up/src/assets/private-room-page.png" alt="Private Rooms" width="100%" />
+
+### ⚙️ Settings
+<img src="./sign-up/src/assets/settings-page.png" alt="Settings Page" width="100%" />
 
 ---
 
@@ -271,5 +284,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Azeem Shaik**
 - GitHub: [@shaikazeem2001](https://github.com/shaikazeem2001)
-- LinkedIn: [Placeholder: Your LinkedIn URL]
+- LinkedIn: [Azeem Shaik](https://www.linkedin.com/in/azeem-shaik-817886233/33)
 
