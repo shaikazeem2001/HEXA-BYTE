@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  "https://vibe-chat-production-e694.up.railway.app", 
+  "https://vibe-chat-uz4a.onrender.com", 
   "http://localhost:5173", 
   "http://localhost:5174", 
   "http://localhost:3000",
