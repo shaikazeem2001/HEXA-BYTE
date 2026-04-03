@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://vibe-chat-uz4a.onrender.com",
+  // Force local API on dev, Render API on production (bypassing sticky Vercel dashboard variables)
+  baseURL: import.meta.env.DEV ? "http://localhost:9096" : "https://vibe-chat-uz4a.onrender.com",
   withCredentials: true,
 });
 
