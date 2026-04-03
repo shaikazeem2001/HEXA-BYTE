@@ -54,8 +54,8 @@ const Login = () => {
           <div className="flex justify-center mb-4">
 
           </div>
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight whitespace-nowrap transition-colors">VibeChat</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">Welcome back! login to continue vibing.</p>
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight whitespace-nowrap transition-colors">HEXA BYTE</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors">Welcome back! login to continue.</p>
         </div>
 
         <div className="space-y-5">
@@ -65,7 +65,7 @@ const Login = () => {
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-iris-500 transition-colors" size={18} />
               <input
                 type="email"
-                placeholder="name@vibe.chat"
+                placeholder="name@hexabyte.app"
                 className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white pl-12 pr-4 py-4 rounded-2xl focus:outline-none focus:border-iris-500 transition-all shadow-inner font-medium"
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={handleKeyDown}

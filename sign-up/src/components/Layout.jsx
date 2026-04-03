@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
                     >
                         <Menu size={24} />
                     </button>
-                    <span className="font-bold text-gray-900 dark:text-white tracking-tight italic">VibeChat</span>
+                    <span className="font-bold text-gray-900 dark:text-white tracking-tight italic">HEXA BYTE</span>
                     <div className="w-10"></div> {/* Spacer */}
                 </div>
 

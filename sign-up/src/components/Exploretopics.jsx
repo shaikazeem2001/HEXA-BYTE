@@ -52,7 +52,7 @@ const Exploretopics = () => {
             Explore What's <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-iris-500 to-iris-700 dark:from-iris-400 dark:to-iris-600">Trending Now</span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg mb-8 leading-relaxed transition-colors">
-            Dive into specialized topics<span className="text-gray-900 dark:text-white font-bold transition-colors"></span>. Join the conversation and vibe with like-minded people.
+            Dive into specialized topics<span className="text-gray-900 dark:text-white font-bold transition-colors"></span>. Join the conversation and connect with like-minded people.
           </p>
 
           {/* Search Bar */}

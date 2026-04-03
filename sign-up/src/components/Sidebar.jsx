@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       }`}>
       <div className="p-6 flex items-center justify-between">
         <h1 onClick={() => { navigate('/profile'); setIsOpen(false); }} className="text-2xl font-bold text-gray-900 dark:text-white cursor-pointer flex items-center gap-2 transition-colors">
-          <span className="text-gray-900 dark:text-white">Vibe</span>Chat
+          <span className="text-gray-900 dark:text-white">HEXA</span> BYTE
         </h1>
         <button
           onClick={() => setIsOpen(false)}

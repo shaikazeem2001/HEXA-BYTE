@@ -307,7 +307,7 @@ const Settings = () => {
                                         <input
                                             type="email"
                                             className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white pl-12 pr-4 py-3 rounded-xl cursor-not-allowed font-medium"
-                                            value={email || "guest@vibe.chat"}
+                                            value={email || "guest@hexabyte.app"}
                                             disabled
                                         />
                                     </div>

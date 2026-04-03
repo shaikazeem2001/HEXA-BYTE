@@ -1,8 +1,8 @@
 <div align="center">
 
-![Vibe Chat Logo](https://img.icons8.com/fluency/96/chat.png)
+![HEXA BYTE Logo](https://img.icons8.com/fluency/96/chat.png)
 
-# 💬 Vibe Chat
+# 💬 HEXA BYTE
 
 ### **Real-Time Community Chat Platform**
 
@@ -17,10 +17,10 @@
 
 ## 🌟 Project Overview
 
-**Vibe Chat** is a modern, feature-rich real-time messaging platform built for communities. Inspired by intuitive chat interfaces and powered by robust real-time technologies, it delivers enterprise-grade chat functionality with a beautiful, responsive design.
+**HEXA BYTE** is a modern, feature-rich real-time messaging platform built for communities. Inspired by intuitive chat interfaces and powered by robust real-time technologies, it delivers enterprise-grade chat functionality with a beautiful, responsive design.
 
 ### The Problem It Solves
-Traditional messaging apps often lack community-focused features or have steep learning curves. Vibe Chat provides a seamless, scalable, and secure communication platform that brings communities together through real-time messaging, public/private rooms, and rich media sharing.
+Traditional messaging apps often lack community-focused features or have steep learning curves. HEXA BYTE provides a seamless, scalable, and secure communication platform that brings communities together through real-time messaging, public/private rooms, and rich media sharing.
 
 ### Target Users
 - **Communities & Groups**: Looking for organized, real-time communication.
@@ -96,7 +96,7 @@ The system follows a client-server architecture:
 ## 📁 Project Structure
 
 ```text
-Vibe-chat/
+HEXA-BYTE/
 │
 ├── Backend/                 # Express.js Server
 │   ├── config/              # Configuration files (Supabase, etc.)
