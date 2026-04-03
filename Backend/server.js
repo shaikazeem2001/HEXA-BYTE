@@ -28,8 +28,8 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// Serve static files from the React app build
-app.use(express.static(path.join(__dirname, "../sign-up/dist")));
+// Serve static files from the React app build (Disabled because frontend is hosted on Vercel)
+// app.use(express.static(path.join(__dirname, "../sign-up/dist")));
 
 // Routes
 const authRoutes = require("./routes/auth.routes");
@@ -125,10 +125,11 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.id);
   });
 });
-// Catch-all handler for SPA
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
-});
+// Catch-all handler for SPA (Disabled because frontend is hosted on Vercel)
+// app.get(/.*/, (req, res) => {
+//   res.sendFile(path.join(__dirname, "../sign-up/dist", "index.html"));
+// });
+
 
 // Port
 const PORT = process.env.PORT || 9096;
