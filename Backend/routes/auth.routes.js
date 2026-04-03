@@ -291,7 +291,7 @@ router.delete("/profile", authMiddleware, async (req, res) => {
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
     res.json({ message: "Account deleted successfully" });
@@ -337,7 +337,7 @@ router.post("/login", async (req, res) => {
     res.cookie('token', token, {
        httpOnly: true,
        secure: process.env.NODE_ENV === 'production',
-       sameSite: 'none', // Required for cross-origin requests
+       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Required for cross-origin requests
        maxAge: 24 * 60 * 60 * 1000 // 1 day limit
     });
 
@@ -381,7 +381,7 @@ router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.json({ message: "Logged out successfully" });
 });
