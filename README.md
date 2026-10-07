@@ -125,8 +125,8 @@ HEXA-BYTE/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/shaikazeem2001/Vibe-chat.git
-cd Vibe-chat
+git clone https://github.com/shaikazeem2001/HEXA-BYTE.git
+cd HEXA-BYTE
 ```
 
 ### 2. Set up the Backend
@@ -284,5 +284,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 **Azeem Shaik**
 - GitHub: [@shaikazeem2001](https://github.com/shaikazeem2001)
-- LinkedIn: [Azeem Shaik](https://www.linkedin.com/in/azeem-shaik-817886233/33)
+- LinkedIn: [Azeem Shaik](https://www.linkedin.com/in/shaik-azeem-817886233/)
 
